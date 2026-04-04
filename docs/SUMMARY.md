@@ -32,4 +32,3 @@
 
 - `CHANGELOG.md`：版本变更日志。
 - `templates/changelog-template.md`：日志模板。
-

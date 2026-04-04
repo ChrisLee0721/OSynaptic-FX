@@ -1,4 +1,5 @@
 #include "../include/osfx_cli_lite.h"
+#include "../include/osfx_build_config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -38,6 +39,16 @@ static int join_args(int start, int argc, const char* argv[], char* out, size_t 
 }
 
 int osfx_cli_lite_run(osfx_platform_runtime* rt, int argc, const char* argv[], char* out, size_t out_cap) {
+#if !OSFX_ENABLE_CLI
+    (void)rt;
+    (void)argc;
+    (void)argv;
+    if (!out || out_cap == 0U) {
+        return 0;
+    }
+    snprintf(out, out_cap, "error=cli_disabled");
+    return 0;
+#else
     if (!rt || !out || out_cap == 0U) {
         return 0;
     }
@@ -136,5 +147,6 @@ int osfx_cli_lite_run(osfx_platform_runtime* rt, int argc, const char* argv[], c
 
     snprintf(out, out_cap, "error=unknown_command");
     return 0;
+#endif
 }
 

@@ -31,6 +31,7 @@ Embedded-first OpenSynaptic C99 workspace.
 
 - `include/` - public headers (`osfx_core.h` and module APIs)
 - `src/` - C99 module implementations
+- `CMakeLists.txt` - CMake static-library entry
 - `tests/` - native unit and integration tests
 - `tools/` - CLI / benchmark entry programs
 - `scripts/` - build/test/benchmark automation
@@ -68,6 +69,20 @@ Optional quality/benchmark runs:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Matrix
 powershell -ExecutionPolicy Bypass -File .\scripts\bench.ps1 -Compiler auto
+```
+
+## CMake Quick Start
+
+```powershell
+cmake -S . -B build_cmake
+cmake --build build_cmake --config Release
+```
+
+Example with feature overrides:
+
+```powershell
+cmake -S . -B build_cmake -DOSFX_CFG_PLUGIN_TEST_PLUGIN=OFF -DOSFX_CFG_PAYLOAD_GEOHASH_ID=ON
+cmake --build build_cmake --config Release
 ```
 
 ## Output Artifacts

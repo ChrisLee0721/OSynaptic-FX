@@ -1,6 +1,9 @@
 #include "../include/osfx_id_allocator.h"
+#include "../include/osfx_build_config.h"
 
+#if OSFX_ENABLE_FILE_IO
 #include <stdio.h>
+#endif
 #include <string.h>
 
 static uint32_t count_in_use(const osfx_id_allocator* alloc) {
@@ -245,6 +248,11 @@ int osfx_id_touch(osfx_id_allocator* alloc, uint32_t aid, uint64_t now_ts) {
 }
 
 int osfx_id_save(const osfx_id_allocator* alloc, const char* path) {
+#if !OSFX_ENABLE_FILE_IO
+    (void)alloc;
+    (void)path;
+    return 0;
+#else
     FILE* fp;
     size_t i;
     if (!alloc || !path) {
@@ -277,9 +285,15 @@ int osfx_id_save(const osfx_id_allocator* alloc, const char* path) {
     }
     fclose(fp);
     return 1;
+#endif
 }
 
 int osfx_id_load(osfx_id_allocator* alloc, const char* path) {
+#if !OSFX_ENABLE_FILE_IO
+    (void)alloc;
+    (void)path;
+    return 0;
+#else
     FILE* fp;
     char line[256];
     if (!alloc || !path) {
@@ -343,5 +357,6 @@ int osfx_id_load(osfx_id_allocator* alloc, const char* path) {
     }
     fclose(fp);
     return 1;
+#endif
 }
 

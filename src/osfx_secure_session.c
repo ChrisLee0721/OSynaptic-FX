@@ -1,6 +1,9 @@
 #include "../include/osfx_secure_session.h"
+#include "../include/osfx_build_config.h"
 
+#if OSFX_ENABLE_FILE_IO
 #include <stdio.h>
+#endif
 #include <string.h>
 
 static osfx_secure_session* find_or_alloc(osfx_secure_session_store* store, uint32_t aid) {
@@ -202,6 +205,11 @@ int osfx_secure_check_and_update_timestamp(osfx_secure_session_store* store, uin
 }
 
 int osfx_secure_store_save(const osfx_secure_session_store* store, const char* path) {
+#if !OSFX_ENABLE_FILE_IO
+    (void)store;
+    (void)path;
+    return 0;
+#else
     FILE* fp;
     size_t i;
     if (!store || !path) {
@@ -234,9 +242,15 @@ int osfx_secure_store_save(const osfx_secure_session_store* store, const char* p
     }
     fclose(fp);
     return 1;
+#endif
 }
 
 int osfx_secure_store_load(osfx_secure_session_store* store, const char* path) {
+#if !OSFX_ENABLE_FILE_IO
+    (void)store;
+    (void)path;
+    return 0;
+#else
     FILE* fp;
     char line[512];
     if (!store || !path) {
@@ -300,5 +314,6 @@ int osfx_secure_store_load(osfx_secure_session_store* store, const char* path) {
     }
     fclose(fp);
     return 1;
+#endif
 }
 

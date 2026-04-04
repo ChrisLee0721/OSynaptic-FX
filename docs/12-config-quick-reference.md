@@ -49,4 +49,3 @@ powershell -ExecutionPolicy Bypass -File .\osfx-c99\scripts\bench.ps1 -Compiler 
 - Quality gate: `osfx-c99/build/quality_gate_report.md`
 - Benchmark: `osfx-c99/build/bench/bench_report.md`
 - Benchmark CSV: `osfx-c99/build/bench/bench_report.csv`
-

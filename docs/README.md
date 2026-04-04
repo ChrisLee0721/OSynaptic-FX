@@ -31,4 +31,3 @@
 - 插件策略：仅纳入 `transport`（lite）、`test_plugin`（lite）、`port_forwarder`（full）。
 - 显式排除：`web`、`sql`、`dependency_manager`、`env_guard` 及其他服务插件。
 - 质量门：支持 `clang/gcc/cl` 矩阵验证，报告产物为 `osfx-c99/build/quality_gate_report.md`。
-

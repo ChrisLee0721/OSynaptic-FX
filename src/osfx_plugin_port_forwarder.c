@@ -1,4 +1,5 @@
 #include "../include/osfx_plugin_port_forwarder.h"
+#include "../include/osfx_build_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -125,12 +126,16 @@ int osfx_plugin_port_forwarder_init(void* instance, const char* config) {
         return 0;
     }
     p->initialized = 1;
+#if OSFX_ENABLE_FILE_IO
     if (config) {
         parse_config_path(config, p->persist_path, sizeof(p->persist_path));
         if (p->persist_path[0] != '\0') {
             osfx_pf_load(p, p->persist_path);
         }
     }
+#else
+    (void)config;
+#endif
     return 1;
 }
 
@@ -145,9 +150,11 @@ int osfx_plugin_port_forwarder_close(void* instance) {
     if (!p) {
         return 0;
     }
+#if OSFX_ENABLE_FILE_IO
     if (p->persist_path[0] != '\0') {
         osfx_pf_save(p, p->persist_path);
     }
+#endif
     p->initialized = 0;
     return 1;
 }
@@ -256,6 +263,11 @@ int osfx_pf_forward(
 }
 
 int osfx_pf_save(const osfx_plugin_port_forwarder* plugin, const char* path) {
+#if !OSFX_ENABLE_FILE_IO
+    (void)plugin;
+    (void)path;
+    return 0;
+#else
     FILE* fp;
     size_t i;
     if (!plugin || !path) {
@@ -285,9 +297,15 @@ int osfx_pf_save(const osfx_plugin_port_forwarder* plugin, const char* path) {
     }
     fclose(fp);
     return 1;
+#endif
 }
 
 int osfx_pf_load(osfx_plugin_port_forwarder* plugin, const char* path) {
+#if !OSFX_ENABLE_FILE_IO
+    (void)plugin;
+    (void)path;
+    return 0;
+#else
     FILE* fp;
     char line[256];
     if (!plugin || !path) {
@@ -340,6 +358,7 @@ int osfx_pf_load(osfx_plugin_port_forwarder* plugin, const char* path) {
     }
     fclose(fp);
     return 1;
+#endif
 }
 
 int osfx_plugin_port_forwarder_command(void* instance, const char* cmd, const char* args, char* out, size_t out_cap) {
@@ -463,21 +482,33 @@ int osfx_plugin_port_forwarder_command(void* instance, const char* cmd, const ch
     }
     if (strcmp(cmd, "save") == 0) {
         const char* path = (args && args[0] != '\0') ? args : p->persist_path;
+#if !OSFX_ENABLE_FILE_IO
+        (void)path;
+        snprintf(out, out_cap, "error=file_io_disabled");
+        return 0;
+#else
         if (!path || path[0] == '\0' || !osfx_pf_save(p, path)) {
             snprintf(out, out_cap, "error=save_failed");
             return 0;
         }
         snprintf(out, out_cap, "ok=1 saved=%s", path);
         return 1;
+#endif
     }
     if (strcmp(cmd, "load") == 0) {
         const char* path = (args && args[0] != '\0') ? args : p->persist_path;
+#if !OSFX_ENABLE_FILE_IO
+        (void)path;
+        snprintf(out, out_cap, "error=file_io_disabled");
+        return 0;
+#else
         if (!path || path[0] == '\0' || !osfx_pf_load(p, path)) {
             snprintf(out, out_cap, "error=load_failed");
             return 0;
         }
         snprintf(out, out_cap, "ok=1 loaded=%s", path);
         return 1;
+#endif
     }
     snprintf(out, out_cap, "error=unknown_cmd");
     return 0;
