@@ -1,30 +1,30 @@
 # 01 Overview
 
-## 项目定位
+## Project Positioning
 
-`osfx-c99` 是 OpenSynaptic 协议核心的 C99 嵌入式实现，目标是提供可静态链接、可移植、可验证的核心能力，不追求全平台服务生态 1:1 复制。
+`osfx-c99` is a C99 embedded implementation of the OpenSynaptic protocol core, targeting to provide statically linkable, portable, and verifiable core capabilities, without pursuing 1:1 replication of the full platform service ecosystem.
 
-## 已实现范围
+## Implemented Scope
 
-- 编解码与校验：Base62、CRC8、CRC16/CCITT。
-- 数据包：FULL/DIFF/HEART 编码与最小元数据解码。
-- 融合状态机：自动策略切换与回放路径。
-- 安全面：会话状态、密钥派生、时间戳单调防护、持久化。
-- 运行时：transporter runtime、protocol matrix、service runtime。
-- 插件体系（本阶段）：`transport` lite、`test_plugin` lite、`port_forwarder` full。
-- CLI：轻量命令路由与独立入口 `tools/osfx_cli_main.c`。
+- Codecs and Checksums: Base62, CRC8, CRC16/CCITT.
+- Packet Handling: FULL/DIFF/HEART encoding and minimal metadata decoding.
+- Fusion State Machine: Automatic policy switching and playback path.
+- Security Layer: Session state, key derivation, timestamp monotonicity protection, persistence.
+- Runtime: Transporter runtime, protocol matrix, service runtime.
+- Plugin System (current phase): `transport` lite, `test_plugin` lite, `port_forwarder` full.
+- CLI: Lightweight command routing and standalone entry point `tools/osfx_cli_main.c`.
 
-## 阶段状态
+## Phase Status
 
-- `P0`：核心闭环完成。
-- `P1`：库数据驱动镜像完成（Units/Prefixes/Symbols）。
-- `P2`：插件/服务运行时镜像完成。
-- `P3`：安全控制面边界处理完成。
-- `P4`：ID 租约策略增强完成。
-- 当前收口方向：发布文档、镜像覆盖与持续优化。
+- `P0`: Core closed-loop completion.
+- `P1`: Library data-driven mirror completion (Units/Prefixes/Symbols).
+- `P2`: Plugin/service runtime mirror completion.
+- `P3`: Security control plane boundary handling completion.
+- `P4`: ID lease policy enhancement completion.
+- Current closure direction: Release documentation, mirror coverage, and continuous optimization.
 
-## 非目标（当前）
+## Non-Goals (Current)
 
-- 不纳入 `web/sql/dependency_manager/env_guard`。
-- 不实现 OpenSynaptic 全量服务生态与复杂运维面。
+- Excluding `web/sql/dependency_manager/env_guard`.
+- Not implementing full OpenSynaptic service ecosystem and complex operations plane.
 

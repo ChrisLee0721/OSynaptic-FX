@@ -1,11 +1,11 @@
 # 06 CLI Lite Guide
 
-## 入口
+## Entry Point
 
-- 独立入口源码：`tools/osfx_cli_main.c`
-- 路由实现：`src/osfx_cli_lite.c`
+- Independent entry source code: `tools/osfx_cli_main.c`
+- Routing implementation: `src/osfx_cli_lite.c`
 
-## 命令总览
+## Command Overview
 
 - `plugin-list`
 - `plugin-load <name> [config]`
@@ -14,67 +14,67 @@
 - `test-plugin <subcmd> [args...]`
 - `port-forwarder <subcmd> [args...]`
 
-## 常用示例
+## Common Examples
 
 ```powershell
-# 列出插件
+# List plugins
 .\osfx-c99\build\osfx_cli_cl.exe plugin-list
 
-# 加载 transport 并查看状态
+# Load transport and view status
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load transport
 .\osfx-c99\build\osfx_cli_cl.exe transport-status
 
-# 运行 test_plugin 轻量套件
+# Run test_plugin lightweight suite
 .\osfx-c99\build\osfx_cli_cl.exe test-plugin run component
 
-# 添加并触发端口转发规则
+# Add and trigger port forwarding rule
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder add-rule r1 udp 8080 tcp 9000
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder forward udp 8080 A1B2
 ```
 
-## 多编译器可执行名示例
+## Multi-Compiler Executable Examples
 
-测试脚本会根据编译器产出不同 CLI 可执行文件：
+Test scripts produce different CLI executables based on compiler:
 
 - `clang`: `osfx-c99/build/osfx_cli_clang.exe`
 - `gcc`: `osfx-c99/build/osfx_cli_gcc.exe`
 - `cl`: `osfx-c99/build/osfx_cli_cl.exe`
 
 ```powershell
-# clang 产物示例
+# clang artifact example
 .\osfx-c99\build\osfx_cli_clang.exe plugin-list
 
-# gcc 产物示例
+# gcc artifact example
 .\osfx-c99\build\osfx_cli_gcc.exe transport-status
 ```
 
-## 工作流示例（推荐）
+## Recommended Workflow Example
 
 ```powershell
-# 1) 查看插件
+# 1) View plugins
 .\osfx-c99\build\osfx_cli_cl.exe plugin-list
 
-# 2) 载入插件
+# 2) Load plugins
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load transport
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load test_plugin
 
-# 3) 执行检查
+# 3) Execute checks
 .\osfx-c99\build\osfx_cli_cl.exe transport-status
 .\osfx-c99\build\osfx_cli_cl.exe test-plugin run component
 
-# 4) 添加转发规则并触发
+# 4) Add forwarding rule and trigger
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load port_forwarder
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder add-rule r1 udp 8080 tcp 9000
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder forward udp 8080 A1B2C3
 ```
 
-## 输出约定
+## Output Conventions
 
-- 成功通常包含 `ok=1` 或状态摘要。
-- 失败返回 `error=...`，并以非零退出码结束。
+- Success typically includes `ok=1` or status summary.
+- Failure returns `error=...` and exits with non-zero code.
 
-示例：
+Examples:
 
-- 成功：`ok=1 loaded=transport`
-- 失败：`error=unknown_command`
+- Success: `ok=1 loaded=transport`
+- Failure: `error=unknown_command`
 

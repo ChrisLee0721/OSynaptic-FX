@@ -21,21 +21,21 @@
 
 Embedded-first OpenSynaptic C99 workspace.
 
-> 当前仓库已经整合到根目录：实现代码、脚本、测试和文档均以根路径为准。
+> The current repository has been consolidated into the root directory: implementation code, scripts, tests, and documentation all follow the root path as the reference.
 
 ## Why OSynapptic-FX
 
-- **Embedded-first delivery**: 面向嵌入式交付的 C99 主实现，路径清晰、依赖可控。
-- **Spec-driven engineering**: 规范先行，代码与测试围绕协议/数据格式契约实现。
-- **Operational runtime stack**: 包含 transport/runtime matrix、glue 编排与插件能力。
-- **Repeatable quality workflow**: build/test/matrix/benchmark 脚本统一，产物可复验。
-- **Single-root structure**: 单根目录结构，减少路径切换和文档漂移。
+- **Embedded-first delivery**: C99 primary implementation targeting embedded delivery with clear paths and controllable dependencies.
+- **Spec-driven engineering**: Specification-first approach with code and tests centered around protocol/data format contracts.
+- **Operational runtime stack**: Includes transport/runtime matrix, glue orchestration, and plugin capabilities.
+- **Repeatable quality workflow**: Unified build/test/matrix/benchmark scripts with reproducible artifacts.
+- **Single-root structure**: Unified directory structure reducing path switching and documentation drift.
 
 ## Who This Repo Is For
 
-- 平台与固件工程师（集成 C99 协议栈）
-- 维护者（验证协议/运行时行为）
-- 贡献者（从规范到实现到测试）
+- Platform and firmware engineers (integrating C99 protocol stacks)
+- Maintainers (verifying protocol/runtime behavior)
+- Contributors (from specification to implementation to testing)
 
 ## Repository Map
 

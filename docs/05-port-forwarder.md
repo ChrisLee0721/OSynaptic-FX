@@ -1,37 +1,37 @@
 # 05 Port Forwarder (Full)
 
-## 能力边界
+## Capability Boundary
 
-`port_forwarder` 在当前范围内是 full 实现，覆盖规则增删改查、命中统计、转发执行、规则持久化与加载。
+`port_forwarder` is a full implementation within the current scope, covering rule creation/deletion/modification/query, hit statistics, forwarding execution, rule persistence, and loading.
 
-## 规则模型
+## Rules Model
 
-- Rule 字段：`name`, `from_proto`, `from_port|*`, `to_proto`, `to_port`, `enabled`, `hit_count`。
-- 匹配逻辑：按注册顺序扫描，匹配到第一条即执行转发。
-- 端口策略：`*` 表示来源端口通配。
+- Rule fields: `name`, `from_proto`, `from_port|*`, `to_proto`, `to_port`, `enabled`, `hit_count`.
+- Matching logic: Scan in registration order, execute forwarding on first match.
+- Port policy: `*` represents wildcard for source port.
 
-## 运行统计
+## Runtime Statistics
 
-- 插件级：`total_forwarded`, `total_dropped`
-- 规则级：`hit_count`
+- Plugin-level: `total_forwarded`, `total_dropped`
+- Rule-level: `hit_count`
 
-## 命令说明
+## Command Description
 
-- `status`：返回初始化状态与总转发/丢弃统计。
-- `stats`：返回统计摘要。
-- `list`：返回规则列表。
-- `add-rule`：新增或覆盖同名规则。
-- `remove-rule`：删除规则。
-- `enable-rule`：启停规则。
-- `forward`：输入来源协议+端口+hex 数据，执行匹配转发。
-- `save/load`：规则持久化。
+- `status`: Returns initialization status and total forwarded/dropped statistics.
+- `stats`: Returns statistics summary.
+- `list`: Returns rules list.
+- `add-rule`: Add or overwrite rule with same name.
+- `remove-rule`: Remove rule.
+- `enable-rule`: Enable/disable rule.
+- `forward`: Input source protocol+port+hex data, execute match-based forwarding.
+- `save/load`: Rule persistence.
 
-## 持久化格式
+## Persistence Format
 
-- 文件为逐行文本记录，字段逗号分隔。
-- 推荐将路径固定在发布目录下并纳入备份策略。
+- File is line-by-line text record with comma-separated fields.
+- Recommended to keep path fixed in release directory and include in backup strategy.
 
-## 典型流程
+## Typical Workflow
 
 1. `plugin-load port_forwarder`
 2. `port-forwarder add-rule r1 udp 8080 tcp 9000`
@@ -39,50 +39,50 @@
 4. `port-forwarder stats`
 5. `port-forwarder save <path>`
 
-## 端到端示例（可复制）
+## End-to-End Example (Copy-paste ready)
 
 ```powershell
-# 初始化与加载
+# Initialize and load
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load port_forwarder
 
-# 新增规则: udp:8080 -> tcp:9000
+# Add rule: udp:8080 -> tcp:9000
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder add-rule r1 udp 8080 tcp 9000
 
-# 查看规则
+# View rules
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder list
 
-# 触发转发（十六进制负载）
+# Trigger forwarding (hex payload)
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder forward udp 8080 A1B2C3D4
 
-# 查看统计
+# View statistics
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder stats
 ```
 
-## 通配端口示例
+## Wildcard Port Example
 
 ```powershell
-# 将任意来源端口的 udp 数据转发到 tcp:9100
+# Forward UDP data from any source port to tcp:9100
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder add-rule any_udp udp * tcp 9100
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder forward udp 5001 AABB
 ```
 
-## 持久化示例
+## Persistence Example
 
 ```powershell
-# 保存规则
+# Save rules
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder save E:\OSynapptic-FX\osfx-c99\build\pf_rules.txt
 
-# 重新加载规则
+# Reload rules
 .\osfx-c99\build\osfx_cli_cl.exe port-forwarder load E:\OSynapptic-FX\osfx-c99\build\pf_rules.txt
 ```
 
-## 常见失败与处理
+## Common Failures and Remedies
 
-- 现象：`error=usage add-rule ...`
-- 原因：参数数量不足或顺序错误。
-- 处理：按 `add-rule <name> <from_proto> <from_port|*> <to_proto> <to_port>` 重试。
+- Symptom: `error=usage add-rule ...`
+- Cause: Insufficient parameters or incorrect order.
+- Remedy: Retry with `add-rule <name> <from_proto> <from_port|*> <to_proto> <to_port>`.
 
-- 现象：`error=no_match_or_emit_failed`
-- 原因：无匹配规则，或 emit 回调发送失败。
-- 处理：先 `list` 校验规则，再检查 `from_proto/from_port` 与入参是否一致。
+- Symptom: `error=no_match_or_emit_failed`
+- Cause: No matching rule, or emit callback send failed.
+- Remedy: First `list` to verify rules, then check if `from_proto/from_port` matches input parameters.
 

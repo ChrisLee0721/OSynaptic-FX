@@ -1,23 +1,23 @@
 # 18 Standardized Units Table
 
-本文档定义用户输入单位与标准化输出单位的映射规则（发送前口径）。
+This document defines the mapping rules between user input units and standardized output units (pre-transmission calibration).
 
-## 1. 范围与来源
+## 1. Scope and Source
 
-- 标准化函数：`osfx_standardize_value(...)`
-- 数据来源：`OpenSynaptic/libraries` 镜像（`osfx_library_catalog`）
-- 本表为**常用单位子集**，不是全量词典。
+- Standardization function: `osfx_standardize_value(...)`
+- Data source: `OpenSynaptic/libraries` mirror (`osfx_library_catalog`)
+- This table is a **subset of common units**, not a full dictionary.
 
-## 2. 用户输入字段（单位相关）
+## 2. User Input Fields (Unit-related)
 
-发送接口 `osfx_glue_encode_sensor_auto(...)` 中：
+In transmission interface `osfx_glue_encode_sensor_auto(...)`:
 
-- 用户提供：`input_unit`
-- 系统输出：`out_unit`（标准单位）
+- User provides: `input_unit`
+- System outputs: `out_unit` (standard unit)
 
-> `cmd` 不是用户定义字段（auto 路径由 `fusion_state` 自动决定）。
+> `cmd` is not a user-defined field (auto path is automatically determined by `fusion_state`).
 
-## 3. 常用单位映射表（示例）
+## 3. Common Unit Mapping Table (Example)
 
 | User Input Unit | Meaning | Canonical Output Unit | Conversion Rule |
 |---|---|---|---|
@@ -29,31 +29,31 @@
 | `degF` | degree Fahrenheit | `K` | `(value - 32) * 5/9 + 273.15` |
 | `%` | percent | `%` | identity |
 
-说明：
+Notes:
 
-- `library conversion` 表示系数/偏移来自库数据，不建议在业务侧硬编码。
+- `library conversion` means the coefficient/offset comes from library data, not recommended to hardcode in business side.
 
-## 4. 前缀规则
+## 4. Prefix Rules
 
-若单位支持前缀且库中标记可前缀化，则会自动解析前缀：
+If unit supports prefix and library marks it as prefixable, prefix will be automatically parsed:
 
-- 示例：`k` + base unit（如 `kPa`）
-- 实际是否可前缀取决于单位元数据 `can_take_prefix`
+- Example: `k` + base unit (e.g., `kPa`)
+- Whether prefix is actually supported depends on unit metadata `can_take_prefix`
 
-## 5. 输入约束与建议
+## 5. Input Constraints and Recommendations
 
-- `input_unit` 必须是可识别字符串。
-- 建议业务侧统一使用标准缩写（如 `kPa`, `cel`, `%`）。
-- 若单位未识别，当前实现会原样透传单位并不做转换；生产场景建议在上层加白名单校验。
+- `input_unit` must be recognizable string.
+- Recommended for business side to consistently use standard abbreviations (e.g., `kPa`, `cel`, `%`).
+- If unit is unrecognized, current implementation will pass through unit as-is without conversion; production scenarios recommend adding whitelist validation at upper layer.
 
-## 6. 发送前检查（单位维度）
+## 6. Pre-Transmission Check (Unit Dimension)
 
-1. 检查 `input_unit` 是否在允许集（建议白名单）。
-2. 调 `osfx_standardize_value(...)` 验证可转换性。
-3. 比对输出 `out_unit` 是否符合业务预期（如压力统一到 `Pa`）。
-4. 校验标准化后数值是否在业务合法区间。
+1. Check if `input_unit` is in allowed set (recommend whitelist).
+2. Call `osfx_standardize_value(...)` to verify convertibility.
+3. Compare output `out_unit` to meet business expectations (e.g., pressure unified to `Pa`).
+4. Verify standardized value is within business legal range.
 
-## 7. 参考代码片段
+## 7. Reference Code Snippet
 
 ```c
 double out_value = 0.0;
@@ -63,9 +63,9 @@ if (!osfx_standardize_value(input_value, input_unit, &out_value, out_unit, sizeo
 }
 ```
 
-## 8. 联动文档
+## 8. Related Documentation
 
-- 发送字段规范：`docs/17-glue-step-by-step.md`
-- 示例手册：`docs/16-examples-cookbook.md`
-- 架构说明：`docs/02-architecture.md`
+- Transmission field specification: `docs/17-glue-step-by-step.md`
+- Examples cookbook: `docs/16-examples-cookbook.md`
+- Architecture description: `docs/02-architecture.md`
 

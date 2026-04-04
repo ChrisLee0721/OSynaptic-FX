@@ -1,56 +1,56 @@
 # 17 Glue Step By Step
 
-本文档给出 `osfx_glue` 的逐步代码说明，目标是让你把协议能力快速串成可运行链路。
+This document provides step-by-step code explanation for `osfx_glue`, aiming to help you quickly assemble protocol capabilities into a runnable chain.
 
-## A. OpenSynaptic 标准数据格式定义（Normative）
+## A. OpenSynaptic Standard Data Format Definition (Normative)
 
-**本节内容已迁移至独立规范文档，以保持主文档的聚焦。**
+**The content of this section has been migrated to a separate specification document to keep the main document focused.**
 
-### 规范入口
+### Specification Entry
 
-详细的数据格式定义、字段约束、构帧规则、用户输入契约等内容，请参阅：
+For detailed data format definitions, field constraints, framing rules, user input contracts, etc., refer to:
 
 📄 **[docs/18-data-format-specification.md](18-data-format-specification.md)**
 
-该文档包含以下核心内容：
+This document contains the following core contents:
 
-| 主题 | 小节 | 说明 |
-|------|------|------|
-| **数据帧格式** | A.1 | 数据帧线格式与字段定义 |
-| **命令字节表** | A.2 | 所有数据和控制命令的编码值 |
-| **负载规范** | A.3-A.4 | 单传感器和控制帧结构 |
-| **Secure 语义** | A.5 | 安全通道处理规则 |
-| **一致性要求** | A.6-A.11 | 发送/接收端实现约束与错误处理 |
-| **用户输入契约** | A.12 | 不同路径的输入字段定义（推荐、高级、标准兼容） |
+| Topic | Section | Description |
+|------|---------|-------------|
+| **Data Frame Format** | A.1 | Data frame wire format and field definitions |
+| **Command Byte Table** | A.2 | Encoding values for all data and control commands |
+| **Payload Specification** | A.3-A.4 | Single sensor and control frame structures |
+| **Secure Semantics** | A.5 | Security channel handling rules |
+| **Consistency Requirements** | A.6-A.11 | Sender/receiver implementation constraints and error handling |
+| **User Input Contract** | A.12 | Input field definitions for different paths (recommended, advanced, standard compatible) |
 
-### 本文档中的规范引用
+### Specification References in This Document
 
-在阅读本文档（17 Glue 集成流程）时，若遇到需要验证数据格式合法性的场景，可直接查阅 `18-data-format-specification.md` 中的对应小节。如：
+When reading this document (17 Glue Integration Process), if you encounter scenarios requiring validation of data format legality, you can directly consult corresponding sections in `18-data-format-specification.md`. For example:
 
-- 编码传感器数据 → 见 A.12（用户输入契约）
-- 验证控制帧结构 → 见 A.4（控制帧最小结构）
-- 理解 Secure 数据处理 → 见 A.5（Secure 语义）
+- Encoding sensor data → See A.12 (User Input Contract)
+- Verifying control frame structure → See A.4 (Control Frame Minimal Structure)
+- Understanding Secure data processing → See A.5 (Secure Semantics)
 
-### 向下兼容说明
+### Backward Compatibility Notes
 
-若你的代码仍引用旧版本中的 A 段内容，建议更新引用为：
+If your code still references section A content from old versions, recommend updating reference to:
 ```
 docs/18-data-format-specification.md#{section}
 ```
 
-例如：`18-data-format-specification.md#A.1` 对应原 `17-glue-step-by-step.md#A.1`
+For example: `18-data-format-specification.md#A.1` corresponds to original `17-glue-step-by-step.md#A.1`
 
-### A.1 [已迁移] 数据帧（DATA_*）线格式
+### A.1 [Migrated] Data Frame (DATA_*) Wire Format
 
-详见 [18-data-format-specification.md#A.1](18-data-format-specification.md#A.1)
+See [18-data-format-specification.md#A.1](18-data-format-specification.md#A.1)
 
-## 0. 目标
+## 0. Goals
 
-- 统一初始化：`fusion/security/id/runtime/plugin`
-- 统一入口：编码、解码、握手分发、插件命令
-- 适用于嵌入式主循环（轮询/事件驱动都可）
+- Unified initialization: `fusion/security/id/runtime/plugin`
+- Unified entry point: encoding, decoding, handshake dispatch, plugin commands
+- Applicable to embedded main loop (polling/event-driven both supported)
 
-## 1. 头文件与上下文
+## 1. Header Files and Context
 
 ```c
 #include "osfx_core.h"
@@ -59,12 +59,12 @@ osfx_glue_ctx glue;
 osfx_glue_config cfg;
 ```
 
-说明：
+Notes:
 
-- `osfx_glue_ctx` 是运行时总上下文。
-- `osfx_glue_config` 是初始化配置（本地 AID、ID 池范围、租期、安全过期、回调）。
+- `osfx_glue_ctx` is the runtime total context.
+- `osfx_glue_config` is initialization configuration (local AID, ID pool range, lease period, security expiration, callbacks).
 
-## 2. 配置默认值并按设备覆盖
+## 2. Set Default Configuration and Override per Device
 
 ```c
 osfx_glue_default_config(&cfg);
@@ -76,12 +76,12 @@ cfg.id_default_lease_seconds = 3600U;
 cfg.secure_expire_seconds = 86400U;
 ```
 
-建议：
+Recommendations:
 
-- 设备侧固定 `local_aid` 时可直接写死。
-- 作为服务端分配器时，重点设置 `id_start/id_end`。
+- Device side can hardcode fixed `local_aid`.
+- When acting as server allocator, focus on setting `id_start/id_end`.
 
-## 3. 初始化胶水层
+## 3. Initialize Glue Layer
 
 ```c
 int rc = osfx_glue_init(&glue, &cfg);
@@ -90,16 +90,16 @@ if (rc != OSFX_GLUE_OK) {
 }
 ```
 
-初始化内部完成：
+Initialization internally completes:
 
 - `osfx_fusion_state_init`
 - `osfx_secure_store_init`
 - `osfx_id_allocator_init`
 - `osfx_protocol_matrix_init + register_defaults`
 - `osfx_platform_runtime_init`
-- 自动加载 `transport/test_plugin/port_forwarder`
+- Auto-load `transport/test_plugin/port_forwarder`
 
-## 4. 处理客户端 ID 申请（服务端路径）
+## 4. Handle Client ID Request (Server Path)
 
 ```c
 uint8_t id_req[3] = { OSFX_CMD_ID_REQUEST, 0x12, 0x34 };
@@ -107,16 +107,16 @@ osfx_hs_result hs;
 
 rc = osfx_glue_process_packet(&glue, id_req, sizeof(id_req), 1710000000ULL, &hs);
 if (rc == OSFX_GLUE_OK && hs.has_response) {
-    // hs.response / hs.response_len -> 回发给客户端
+    // hs.response / hs.response_len -> Send back to client
 }
 ```
 
-预期：
+Expected:
 
-- 成功分配：`hs.response[0] == OSFX_CMD_ID_ASSIGN`
-- 分配失败：返回 NACK（常见 `ID_POOL_EXHAUSTED`）
+- Successful allocation: `hs.response[0] == OSFX_CMD_ID_ASSIGN`
+- Allocation failure: Return NACK (commonly `ID_POOL_EXHAUSTED`)
 
-## 5. 编码上行传感器（设备路径）
+## 5. Encode Uplink Sensor (Device Path)
 
 ```c
 uint8_t packet[256];
@@ -137,12 +137,12 @@ rc = osfx_glue_encode_sensor_auto(
 );
 ```
 
-说明：
+Notes:
 
-- `out_cmd` 会在 FULL/DIFF/HEART 之间自动切换。
-- `packet` 可交给协议矩阵/网络层发送。
+- `out_cmd` will automatically switch between FULL/DIFF/HEART.
+- `packet` can be sent to protocol matrix/network layer.
 
-## 6. 解码下行数据包（接收路径）
+## 6. Decode Downlink Data Packet (Receive Path)
 
 ```c
 char sensor_id[32];
@@ -163,12 +163,12 @@ rc = osfx_glue_decode_sensor_auto(
 );
 ```
 
-输出：
+Output:
 
 - `sensor_id` / `value` / `unit`
 - `meta.cmd/meta.source_aid/meta.timestamp_raw`
 
-## 7. 插件命令统一调用
+## 7. Unified Plugin Command Call
 
 ```c
 char out[256];
@@ -178,25 +178,25 @@ osfx_glue_plugin_cmd(&glue, "test_plugin", "run", "component", out, sizeof(out))
 osfx_glue_plugin_cmd(&glue, "port_forwarder", "list", "", out, sizeof(out));
 ```
 
-常见用途：
+Common Use Cases:
 
-- 运行时状态探活
-- 端口转发规则运维
-- 轻量自检触发
+- Runtime status health check
+- Port forwarding rule operations
+- Lightweight self-check trigger
 
-## 7.1 `transport` 插件具体应用（设备数据发出）
+## 7.1 `transport` Plugin Specific Application (Device Data Output)
 
-应用目标：设备把采样包按当前可用链路发出（auto 选择）。
+Application goal: Device sends sampled packets over currently available links (auto selection).
 
-步骤：
+Steps:
 
 ```c
 char out[256];
 
-// Step T1: 查看 transport 是否已初始化
+// Step T1: Check if transport is initialized
 osfx_glue_plugin_cmd(&glue, "transport", "status", "", out, sizeof(out));
 
-// Step T2: 直接发送十六进制负载（协议 auto 选择）
+// Step T2: Send hex payload directly (protocol auto-selects)
 osfx_glue_plugin_cmd(&glue, "transport", "dispatch", "auto A1B2C3", out, sizeof(out));
 // 预期 out 包含: ok=1 used=<proto> bytes=3
 ```

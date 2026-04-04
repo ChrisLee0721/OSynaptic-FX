@@ -2,30 +2,30 @@
 
 ## 范围策略
 
-### 纳入插件
+### Included Plugins
 
-- `transport`（lite）
-- `test_plugin`（lite）
-- `port_forwarder`（full）
+- `transport` (lite)
+- `test_plugin` (lite)
+- `port_forwarder` (full)
 
-### 排除插件
+### Excluded Plugins
 
 - `web`
 - `sql`
 - `dependency_manager`
 - `env_guard`
-- 其他非目标服务插件
+- Other non-goal service plugins
 
-## 命令矩阵
+## Command Matrix
 
 | Command | Description |
 |---|---|
-| `plugin-list` | 列出当前注册插件 |
-| `plugin-load <name> [config]` | 加载插件 |
-| `plugin-cmd <name> <cmd> [args...]` | 对指定插件下发命令 |
-| `transport-status` | 快速查看 transport 状态 |
-| `test-plugin ...` | 执行 test_plugin 命令 |
-| `port-forwarder ...` | 执行 port_forwarder 命令 |
+| `plugin-list` | List currently registered plugins |
+| `plugin-load <name> [config]` | Load plugin |
+| `plugin-cmd <name> <cmd> [args...]` | Issue command to specified plugin |
+| `transport-status` | Quick view of transport status |
+| `test-plugin ...` | Execute test_plugin command |
+| `port-forwarder ...` | Execute port_forwarder command |
 
 ## 插件级命令
 
@@ -65,33 +65,33 @@
 - `test_plugin` 更偏“运行时自检面”。
 - `port_forwarder` 更偏“网关转发策略面”。
 
-## 快速示例
+## Quick Examples
 
 ```powershell
-# 1) 查看当前纳入插件
+# 1) View current included plugins
 .\osfx-c99\build\osfx_cli_cl.exe plugin-list
 
-# 2) 加载 scoped 插件
+# 2) Load scoped plugins
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load transport
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load test_plugin
 .\osfx-c99\build\osfx_cli_cl.exe plugin-load port_forwarder
 
-# 3) 通过 plugin-cmd 访问 transport
+# 3) Access transport via plugin-cmd
 .\osfx-c99\build\osfx_cli_cl.exe plugin-cmd transport status
 .\osfx-c99\build\osfx_cli_cl.exe plugin-cmd transport dispatch auto A1B2
 
-# 4) 通过 plugin-cmd 访问 test_plugin
+# 4) Access test_plugin via plugin-cmd
 .\osfx-c99\build\osfx_cli_cl.exe plugin-cmd test_plugin run component
 
-# 5) 通过 plugin-cmd 访问 port_forwarder
+# 5) Access port_forwarder via plugin-cmd
 .\osfx-c99\build\osfx_cli_cl.exe plugin-cmd port_forwarder add-rule r1 udp 8080 tcp 9000
 .\osfx-c99\build\osfx_cli_cl.exe plugin-cmd port_forwarder forward udp 8080 A1B2C3
 ```
 
-## 预期输出示例
+## Expected Output Examples
 
-- `plugin-list` 输出包含 `transport,test_plugin,port_forwarder`。
-- 加载成功通常返回 `ok=1 loaded=<name>`。
-- 命令失败通常返回 `error=...`（如参数不足或命令不存在）。
-- 若调用排除插件（如 `web`），应返回 `error=load_failed name=web` 或等价失败输出。
+- `plugin-list` output contains `transport,test_plugin,port_forwarder`.
+- Successful load typically returns `ok=1 loaded=<name>`.
+- Command failure typically returns `error=...` (e.g., insufficient parameters or unknown command).
+- If calling excluded plugins (e.g., `web`), should return `error=load_failed name=web` or equivalent failure output.
 
