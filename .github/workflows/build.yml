@@ -70,7 +70,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build ESP32 static library
+        shell: bash
         run: |
+          source /opt/esp/idf/export.sh
+          command -v xtensa-esp32-elf-gcc
           mkdir -p build-esp32/obj build-esp32/lib
           for c in src/*.c; do
             xtensa-esp32-elf-gcc -std=c99 -Os -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-esp32/obj/$(basename "${c%.c}").o"
@@ -102,18 +105,38 @@ jobs:
           name: osfx-cortexm-a
           path: build-cortexm/lib/libosfx_core_cortexm.a
 
+  stm32-static:
+    name: stm32-a
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ARM embedded toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+      - name: Build STM32 static library
+        run: |
+          mkdir -p build-stm32/obj build-stm32/lib
+          for c in src/*.c; do
+            arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -std=c99 -Os -ffreestanding -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-stm32/obj/$(basename "${c%.c}").o"
+          done
+          arm-none-eabi-ar rcs build-stm32/lib/libosfx_core_stm32.a build-stm32/obj/*.o
+      - name: Upload stm32 .a
+        uses: actions/upload-artifact@v4
+        with:
+          name: osfx-stm32-a
+          path: build-stm32/lib/libosfx_core_stm32.a
+
   riscv-static:
     name: riscv-a
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install RISC-V toolchain
-        run: sudo apt-get update && sudo apt-get install -y gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+        run: sudo apt-get update && sudo apt-get install -y gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf picolibc-riscv64-unknown-elf
       - name: Build RISC-V static library
         run: |
           mkdir -p build-riscv/obj build-riscv/lib
           for c in src/*.c; do
-            riscv64-unknown-elf-gcc -march=rv32imac -mabi=ilp32 -std=c99 -Os -ffreestanding -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-riscv/obj/$(basename "${c%.c}").o"
+            riscv64-unknown-elf-gcc -march=rv32imac -mabi=ilp32 -specs=picolibc.specs -std=c99 -Os -ffreestanding -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-riscv/obj/$(basename "${c%.c}").o"
           done
           riscv64-unknown-elf-ar rcs build-riscv/lib/libosfx_core_riscv32.a build-riscv/obj/*.o
       - name: Upload riscv .a

@@ -47,7 +47,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build esp32 .a
+        shell: bash
         run: |
+          source /opt/esp/idf/export.sh
+          command -v xtensa-esp32-elf-gcc
           mkdir -p build-esp32/obj
           for c in src/*.c; do
             xtensa-esp32-elf-gcc -std=c99 -Os -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-esp32/obj/$(basename "${c%.c}").o"
@@ -83,12 +86,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install RISC-V toolchain
-        run: sudo apt-get update && sudo apt-get install -y gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+        run: sudo apt-get update && sudo apt-get install -y gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf picolibc-riscv64-unknown-elf
       - name: Build riscv .a
         run: |
           mkdir -p build-riscv/obj
           for c in src/*.c; do
-            riscv64-unknown-elf-gcc -march=rv32imac -mabi=ilp32 -std=c99 -Os -ffreestanding -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-riscv/obj/$(basename "${c%.c}").o"
+            riscv64-unknown-elf-gcc -march=rv32imac -mabi=ilp32 -specs=picolibc.specs -std=c99 -Os -ffreestanding -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-riscv/obj/$(basename "${c%.c}").o"
           done
           riscv64-unknown-elf-ar rcs osfx-${{ github.ref_name }}-riscv32.a build-riscv/obj/*.o
       - name: Upload riscv artifact
@@ -177,8 +180,27 @@ jobs:
           name: pkg-wasm
           path: osfx-${{ github.ref_name }}-wasm.a
 
+  stm32-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ARM embedded toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+      - name: Build stm32 .a
+        run: |
+          mkdir -p build-stm32/obj
+          for c in src/*.c; do
+            arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -std=c99 -Os -ffreestanding -Iinclude -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 -c "$c" -o "build-stm32/obj/$(basename "${c%.c}").o"
+          done
+          arm-none-eabi-ar rcs osfx-${{ github.ref_name }}-stm32.a build-stm32/obj/*.o
+      - name: Upload stm32 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-stm32
+          path: osfx-${{ github.ref_name }}-stm32.a
+
   publish:
-    needs: [linux-package, avr-package, esp32-package, cortexm-package, riscv-package, rp2040-package, android-package, ios-package, wasm-package]
+    needs: [linux-package, avr-package, esp32-package, cortexm-package, stm32-package, riscv-package, rp2040-package, android-package, ios-package, wasm-package]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
