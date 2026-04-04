@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   linux-package:
     runs-on: ubuntu-latest
@@ -210,4 +213,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/**/*.a
-          generate_release_notes: true
+          overwrite_files: true

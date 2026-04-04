@@ -7,6 +7,18 @@
 ![Docs](https://img.shields.io/badge/docs-structured-4169E1)
 ![License](https://img.shields.io/badge/license-see%20project%20files-696969)
 
+![ESP32](https://img.shields.io/badge/ESP32-supported-E7352C?logo=espressif&logoColor=white)
+![STM32](https://img.shields.io/badge/STM32-supported-03234B?logo=stmicroelectronics&logoColor=white)
+![RISC--V](https://img.shields.io/badge/RISC--V-supported-283272?logo=riscv&logoColor=white)
+![RP2040](https://img.shields.io/badge/RP2040-supported-B41F47?logo=raspberrypi&logoColor=white)
+![Android NDK](https://img.shields.io/badge/Android%20NDK-supported-3DDC84?logo=android&logoColor=white)
+![iOS](https://img.shields.io/badge/iOS-supported-000000?logo=apple&logoColor=white)
+![WebAssembly](https://img.shields.io/badge/WebAssembly-supported-654FF0?logo=webassembly&logoColor=white)
+
+![Linux](https://img.shields.io/badge/Linux-build-222222?logo=linux&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-build-0078D6?logo=windows&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-build-111111?logo=apple&logoColor=white)
+
 Embedded-first OpenSynaptic C99 workspace.
 
 > 当前仓库已经整合到根目录：实现代码、脚本、测试和文档均以根路径为准。
