@@ -1,59 +1,466 @@
-name: CI / Precompile (all targets)
-
-# Quality gate (gcc/clang/cl) and bench are in dedicated workflow files:
-#   ci-gcc.yml  — GCC quality gate + benchmark
-#   ci-clang.yml — Clang quality gate
-#   ci-cl.yml   — MSVC quality gate (uses ilammy/msvc-dev-cmd)
+﻿name: CI
 
 on:
   push:
     branches: ["main", "dev", "release/**"]
+    tags: ["v*"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag (e.g. v1.0.0)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
 
 concurrency:
-  group: ci-precompile-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # Precompile: build all platform .a libraries
-  # Informational — does not block PR merges.
-  # ---------------------------------------------------------------------------
-  precompile:
-    name: Precompile Libraries (all targets)
-    runs-on: ubuntu-latest
-    needs: quality-gate
-    continue-on-error: true
-
+  # ─── Quality Gate: GCC ─────────────────────────────────────────────────────
+  quality-gcc:
+    name: Quality Gate (GCC)
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install cross-toolchains (ARM / AVR / RISC-V)
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            gcc-arm-none-eabi libnewlib-arm-none-eabi \
-            gcc-avr avr-libc \
-            gcc-riscv64-unknown-elf \
-            cmake
-
-      - name: Install ESP32 Xtensa toolchain
-        continue-on-error: true
-        run: |
-          TOOLCHAIN_VER="esp-12.2.0_20230208"
-          curl -sL "https://github.com/espressif/crosstool-NG/releases/download/${TOOLCHAIN_VER}/xtensa-esp32-elf-12.2.0_20230208-x86_64-linux-gnu.tar.xz" \
-            | sudo tar -xJ -C /opt
-          echo "/opt/xtensa-esp32-elf/bin" >> $GITHUB_PATH
-
-      - name: Build precompiled libraries (matrix)
+      - name: Ensure GCC is on PATH
         shell: pwsh
-        run: ./scripts/build.ps1 -Matrix
+        run: |
+          if (-not (Get-Command gcc -ErrorAction SilentlyContinue)) {
+            choco install mingw --yes --no-progress
+          }
+          gcc --version
 
-      - name: Upload precompiled libraries
+      - name: Build & Test
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\test.ps1 -Compiler gcc
+
+      - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: precompiled-libs-ci
-          path: src/**/libOSynapticFX.a
+          name: quality-gate-gcc
+          path: build/quality_gate_report.md
           if-no-files-found: ignore
+
+  # ─── Quality Gate: Clang ───────────────────────────────────────────────────
+  quality-clang:
+    name: Quality Gate (Clang)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM (clang)
+        run: choco install llvm --yes --no-progress
+
+      - name: Build & Test
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\test.ps1 -Compiler clang
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-clang
+          path: build/quality_gate_report.md
+          if-no-files-found: ignore
+
+  # ─── Quality Gate: MSVC ────────────────────────────────────────────────────
+  quality-msvc:
+    name: Quality Gate (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC x64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build & Test
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\test.ps1 -Compiler cl
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-msvc
+          path: build/quality_gate_report.md
+          if-no-files-found: ignore
+
+  # ─── Benchmark Gate ────────────────────────────────────────────────────────
+  bench:
+    name: Benchmark Gate
+    runs-on: windows-latest
+    needs: quality-gcc
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure GCC is on PATH
+        shell: pwsh
+        run: |
+          if (-not (Get-Command gcc -ErrorAction SilentlyContinue)) {
+            choco install mingw --yes --no-progress
+          }
+
+      - name: Run benchmark
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\bench.ps1 -Compiler gcc -MemoryLimitKB 0
+
+      - name: Upload bench reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-reports
+          path: |
+            build/bench/bench_report.md
+            build/bench/bench_report.csv
+          if-no-files-found: ignore
+
+  # ─── Platform: Linux x86_64 ────────────────────────────────────────────────
+  linux-package:
+    name: Build (linux-x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cmake
+        run: sudo apt-get install -y --no-install-recommends cmake
+
+      - name: Build Linux .a
+        run: |
+          cmake -S . -B build-linux \
+            -DOSFX_BUILD_EASY_API=ON \
+            -DOSFX_ARCH_PRESET=x86_64
+          cmake --build build-linux
+          mkdir -p dist
+          find build-linux -name "*.a" | head -1 | xargs -I{} cp {} dist/osfx-${{ env.RELEASE_TAG }}-linux-x86_64.a
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-linux
+          path: dist/osfx-${{ env.RELEASE_TAG }}-linux-x86_64.a
+
+  # ─── Platform: AVR ─────────────────────────────────────────────────────────
+  avr-package:
+    name: Build (avr)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install AVR toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-avr binutils-avr avr-libc
+
+      - name: Build AVR .a
+        run: |
+          mkdir -p build-avr/obj
+          for c in src/*.c; do
+            avr-gcc -mmcu=atmega328p -std=c99 -Os -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-avr/obj/$(basename "${c%.c}").o"
+          done
+          avr-ar rcs osfx-${{ env.RELEASE_TAG }}-avr.a build-avr/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-avr
+          path: osfx-${{ env.RELEASE_TAG }}-avr.a
+
+  # ─── Platform: ESP32 (via IDF container) ───────────────────────────────────
+  esp32-package:
+    name: Build (esp32)
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:release-v5.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ESP32 .a
+        shell: bash
+        run: |
+          source /opt/esp/idf/export.sh
+          mkdir -p build-esp32/obj
+          for c in src/*.c; do
+            xtensa-esp32-elf-gcc -std=c99 -Os -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-esp32/obj/$(basename "${c%.c}").o"
+          done
+          xtensa-esp32-elf-ar rcs osfx-${{ env.RELEASE_TAG }}-esp32.a build-esp32/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-esp32
+          path: osfx-${{ env.RELEASE_TAG }}-esp32.a
+
+  # ─── Platform: Cortex-M4 ───────────────────────────────────────────────────
+  cortexm4-package:
+    name: Build (cortex-m4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi
+
+      - name: Build Cortex-M4 .a
+        run: |
+          mkdir -p build-cortexm4/obj
+          for c in src/*.c; do
+            arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+              -std=c99 -Os -ffreestanding -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-cortexm4/obj/$(basename "${c%.c}").o"
+          done
+          arm-none-eabi-ar rcs osfx-${{ env.RELEASE_TAG }}-cortex-m4.a build-cortexm4/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-cortexm4
+          path: osfx-${{ env.RELEASE_TAG }}-cortex-m4.a
+
+  # ─── Platform: RP2040 (Cortex-M0+) ────────────────────────────────────────
+  rp2040-package:
+    name: Build (rp2040)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi
+
+      - name: Build RP2040 .a
+        run: |
+          mkdir -p build-rp2040/obj
+          for c in src/*.c; do
+            arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb \
+              -std=c99 -Os -ffreestanding -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -DARDUINO_ARCH_RP2040=1 \
+              -c "$c" -o "build-rp2040/obj/$(basename "${c%.c}").o"
+          done
+          arm-none-eabi-ar rcs osfx-${{ env.RELEASE_TAG }}-rp2040.a build-rp2040/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-rp2040
+          path: osfx-${{ env.RELEASE_TAG }}-rp2040.a
+
+  # ─── Platform: STM32 (Cortex-M3) ──────────────────────────────────────────
+  stm32-package:
+    name: Build (stm32 / cortex-m3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi
+
+      - name: Build STM32 .a
+        run: |
+          mkdir -p build-stm32/obj
+          for c in src/*.c; do
+            arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb \
+              -std=c99 -Os -ffreestanding -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-stm32/obj/$(basename "${c%.c}").o"
+          done
+          arm-none-eabi-ar rcs osfx-${{ env.RELEASE_TAG }}-stm32.a build-stm32/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-stm32
+          path: osfx-${{ env.RELEASE_TAG }}-stm32.a
+
+  # ─── Platform: RISC-V 32 ──────────────────────────────────────────────────
+  riscv-package:
+    name: Build (riscv32)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install RISC-V toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf picolibc-riscv64-unknown-elf
+
+      - name: Build RISC-V 32 .a
+        run: |
+          mkdir -p build-riscv/obj
+          for c in src/*.c; do
+            riscv64-unknown-elf-gcc -march=rv32imac -mabi=ilp32 \
+              -specs=picolibc.specs -std=c99 -Os -ffreestanding -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-riscv/obj/$(basename "${c%.c}").o"
+          done
+          riscv64-unknown-elf-ar rcs osfx-${{ env.RELEASE_TAG }}-riscv32.a build-riscv/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-riscv
+          path: osfx-${{ env.RELEASE_TAG }}-riscv32.a
+
+  # ─── Platform: Android (aarch64 via NDK) ──────────────────────────────────
+  android-package:
+    name: Build (android-aarch64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Android NDK
+        id: ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build Android .a
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          CC="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang"
+          AR="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+          mkdir -p build-android/obj
+          for c in src/*.c; do
+            "$CC" -std=c99 -Os -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-android/obj/$(basename "${c%.c}").o"
+          done
+          "$AR" rcs osfx-${{ env.RELEASE_TAG }}-android.a build-android/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-android
+          path: osfx-${{ env.RELEASE_TAG }}-android.a
+
+  # ─── Platform: iOS (arm64) ────────────────────────────────────────────────
+  ios-package:
+    name: Build (ios-arm64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build iOS .a
+        run: |
+          mkdir -p build-ios/obj
+          for c in src/*.c; do
+            xcrun --sdk iphoneos clang -arch arm64 \
+              -std=c99 -Os -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-ios/obj/$(basename "${c%.c}").o"
+          done
+          libtool -static -o osfx-${{ env.RELEASE_TAG }}-ios.a build-ios/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-ios
+          path: osfx-${{ env.RELEASE_TAG }}-ios.a
+
+  # ─── Platform: WebAssembly ────────────────────────────────────────────────
+  wasm-package:
+    name: Build (wasm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Emscripten
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends emscripten
+
+      - name: Build WASM .a
+        run: |
+          mkdir -p build-wasm/obj
+          for c in src/*.c; do
+            emcc -std=c99 -Os -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-wasm/obj/$(basename "${c%.c}").o"
+          done
+          emar rcs osfx-${{ env.RELEASE_TAG }}-wasm.a build-wasm/obj/*.o
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-wasm
+          path: osfx-${{ env.RELEASE_TAG }}-wasm.a
+
+  # ─── Publish GitHub Release (tag / workflow_dispatch only) ─────────────────
+  publish:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+    needs:
+      - quality-gcc
+      - quality-clang
+      - quality-msvc
+      - bench
+      - linux-package
+      - avr-package
+      - esp32-package
+      - cortexm4-package
+      - rp2040-package
+      - stm32-package
+      - riscv-package
+      - android-package
+      - ios-package
+      - wasm-package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all platform artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create Arduino library ZIP
+        run: |
+          VER="${{ env.RELEASE_TAG }}"
+          VER="${VER#v}"
+          PKG="OSynaptic-FX"
+          ZIP="OSynaptic-FX-${VER}.zip"
+          mkdir -p "$PKG"
+          cp library.properties README.md LICENSE keywords.txt "$PKG/"
+          cp -r src include examples "$PKG/"
+          zip -r "$ZIP" "$PKG"
+          echo "ZIP_NAME=$ZIP" >> "$GITHUB_ENV"
+          echo "Packaged: $ZIP ($(du -sh "$ZIP" | cut -f1))"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "OSynaptic-FX ${{ env.RELEASE_TAG }}"
+          body_path: RELEASE_NOTES_v1.0.0.md
+          files: |
+            ${{ env.ZIP_NAME }}
+            dist/**/*.a
+            dist/bench-reports/bench_report.md
+            dist/bench-reports/bench_report.csv
+          draft: false
+          prerelease: ${{ contains(env.RELEASE_TAG, '-rc') || contains(env.RELEASE_TAG, '-beta') || contains(env.RELEASE_TAG, '-alpha') }}
+          overwrite: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
