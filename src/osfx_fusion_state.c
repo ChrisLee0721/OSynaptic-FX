@@ -5,6 +5,16 @@
 
 #include "../include/osfx_fusion_packet.h"
 
+/* strnlen is POSIX, not standard C99.
+ * Provide a portable fallback so the code compiles with strict -std=c99
+ * toolchains (emscripten, xtensa, WASM). */
+static size_t osfx_strnlen_(const char* s, size_t maxlen) {
+    size_t n = 0;
+    while (n < maxlen && s[n] != '\0') { n++; }
+    return n;
+}
+#define strnlen osfx_strnlen_
+
 /*
  * parse_body_slots
  * ----------------

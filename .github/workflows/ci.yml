@@ -172,7 +172,15 @@ jobs:
       - name: Build AVR .a
         run: |
           mkdir -p build-avr/obj
+          # Exclude files that use POSIX file I/O, host-only runtimes, or large
+          # data structures that exceed AVR SRAM (ATmega328P has only 2 KB RAM).
+          AVR_EXCLUDE="osfx_glue.c|osfx_platform_runtime.c|osfx_service_runtime.c\
+            |osfx_cli_lite.c|osfx_storage.c|osfx_storage_littlefs.c\
+            |osfx_library_catalog.c|osfx_secure_session.c\
+            |osfx_payload_crypto.c|osfx_plugin_port_forwarder.c"
           for c in src/*.c; do
+            fname="$(basename "$c")"
+            echo "$AVR_EXCLUDE" | tr '|' '\n' | grep -qx "$fname" && continue
             avr-gcc -mmcu=atmega328p -std=c99 -Os -Iinclude \
               -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
               -c "$c" -o "build-avr/obj/$(basename "${c%.c}").o"
@@ -220,7 +228,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install ARM toolchain
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi
 
       - name: Build Cortex-M4 .a
         run: |
@@ -247,7 +255,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install ARM toolchain
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi
 
       - name: Build RP2040 .a
         run: |
@@ -275,7 +283,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install ARM toolchain
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi
 
       - name: Build STM32 .a
         run: |
