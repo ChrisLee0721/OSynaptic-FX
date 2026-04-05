@@ -1,4 +1,4 @@
-/*
+﻿/*
   BasicEncode.ino
 
   Purpose:
@@ -9,7 +9,7 @@
     If you want fewer steps, see EasyQuickStart.
 */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 
 static uint8_t packet_buf[256];
 
@@ -22,7 +22,7 @@ void setup() {
   }
 
   Serial.println();
-  Serial.println("OSynapptic-FX Example: BasicEncode (core API)");
+  Serial.println("OSynaptic-FX Example: BasicEncode (core API)");
 
   ok = osfx_core_encode_sensor_packet(
       0x01020304U,

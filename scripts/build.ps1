@@ -1,4 +1,4 @@
-param(
+﻿param(
     [ValidateSet("auto", "gcc", "clang", "cl")]
     [string]$Compiler = "auto",
     [string]$ConfigPath = "",
@@ -83,10 +83,10 @@ if ($Matrix) {
         # Copy .a to precompiled output directory
         $lib = Get-ChildItem $buildSub -Recurse -Filter "*.a" | Select-Object -First 1
         if ($lib) {
-            $dest = Join-Path $outDir "libOSynappticFX.a"
+            $dest = Join-Path $outDir "libOSynapticFX.a"
             Copy-Item $lib.FullName $dest -Force
             $kb = [math]::Round($lib.Length / 1024, 1)
-            Write-Host "[ok] $($t.Preset) → $($t.OutDir)/libOSynappticFX.a ($kb KB)"
+            Write-Host "[ok] $($t.Preset) → $($t.OutDir)/libOSynapticFX.a ($kb KB)"
             $Results += [PSCustomObject]@{ Target=$t.Preset; Status="OK"; Reason="$kb KB" }
         }
 

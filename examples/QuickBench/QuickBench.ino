@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Quick Benchmark - Dual-Core Arduino Sketch
  * 
  * Measures OSFX packet encoding performance with dual cores:
@@ -13,7 +13,7 @@
  * Usage: Compile & upload to ESP32, open Serial Monitor @ 115200 baud
  */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 

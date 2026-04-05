@@ -186,16 +186,24 @@ static int test_template_grammar(void) {
     strcpy(slots[0].sensor_state, "OK");
     strcpy(slots[0].sensor_unit, "Pa");
     strcpy(slots[0].sensor_value, "abc");
+#if OSFX_CFG_PAYLOAD_GEOHASH_ID
     strcpy(slots[0].geohash_id, "wx4g0ec1");
+#endif
     strcpy(slots[0].supplementary_message, "msg0");
+#if OSFX_CFG_PAYLOAD_RESOURCE_URL
     strcpy(slots[0].resource_url, "https://r/0");
+#endif
     strcpy(slots[1].sensor_id, "HUM");
     strcpy(slots[1].sensor_state, "OK");
     strcpy(slots[1].sensor_unit, "%");
     strcpy(slots[1].sensor_value, "def");
+#if OSFX_CFG_PAYLOAD_GEOHASH_ID
     strcpy(slots[1].geohash_id, "wx4g0ec2");
+#endif
     strcpy(slots[1].supplementary_message, "msg1");
+#if OSFX_CFG_PAYLOAD_RESOURCE_URL
     strcpy(slots[1].resource_url, "https://r/1");
+#endif
 
     if (!osfx_template_encode("N1", "ONLINE", "1710000000", slots, 2U, out, sizeof(out))) {
         printf("[FAIL] template encode failed\n");
@@ -209,10 +217,22 @@ static int test_template_grammar(void) {
         printf("[FAIL] template mismatch\n");
         return 0;
     }
-    if (strcmp(msg.sensors[0].geohash_id, "wx4g0ec1") != 0 || strcmp(msg.sensors[1].supplementary_message, "msg1") != 0 || strcmp(msg.sensors[0].resource_url, "https://r/0") != 0) {
-        printf("[FAIL] template extension mismatch\n");
+#if OSFX_CFG_PAYLOAD_GEOHASH_ID
+    if (strcmp(msg.sensors[0].geohash_id, "wx4g0ec1") != 0) {
+        printf("[FAIL] template geohash mismatch\n");
         return 0;
     }
+#endif
+    if (strcmp(msg.sensors[1].supplementary_message, "msg1") != 0) {
+        printf("[FAIL] template supplementary_message mismatch\n");
+        return 0;
+    }
+#if OSFX_CFG_PAYLOAD_RESOURCE_URL
+    if (strcmp(msg.sensors[0].resource_url, "https://r/0") != 0) {
+        printf("[FAIL] template resource_url mismatch\n");
+        return 0;
+    }
+#endif
     return 1;
 }
 

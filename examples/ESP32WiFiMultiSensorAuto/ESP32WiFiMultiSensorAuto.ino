@@ -1,6 +1,6 @@
-#include <WiFi.h>
+﻿#include <WiFi.h>
 #include <WiFiUdp.h>
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 
 const char* WIFI_SSID = "毛君鹏";
 const char* WIFI_PASS = "12345678";

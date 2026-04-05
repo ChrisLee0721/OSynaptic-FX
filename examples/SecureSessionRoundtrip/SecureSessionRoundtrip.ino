@@ -1,4 +1,4 @@
-/*
+﻿/*
   SecureSessionRoundtrip.ino
 
   Purpose:
@@ -8,7 +8,7 @@
     Users validating secure send/decode behavior.
 */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 
 static osfx_secure_session_store secure_store;
 static uint8_t secure_packet[256];
@@ -26,7 +26,7 @@ void setup() {
   }
 
   Serial.println();
-  Serial.println("OSynapptic-FX Example: SecureSessionRoundtrip (core API)");
+  Serial.println("OSynaptic-FX Example: SecureSessionRoundtrip (core API)");
 
   osfx_secure_store_init(&secure_store, 3600ULL);
 

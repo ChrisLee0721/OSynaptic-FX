@@ -1,4 +1,4 @@
-/*
+﻿/*
   FusionAutoMode.ino
 
   Purpose:
@@ -8,7 +8,7 @@
     Users tuning bandwidth with fusion state behavior.
 */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 
 static osfx_fusion_state tx_state;
 static osfx_fusion_state rx_state;
@@ -30,7 +30,7 @@ void setup() {
   }
 
   Serial.println();
-  Serial.println("OSynapptic-FX Example: FusionAutoMode (core API)");
+  Serial.println("OSynaptic-FX Example: FusionAutoMode (core API)");
 
   osfx_fusion_state_init(&tx_state);
   osfx_fusion_state_init(&rx_state);

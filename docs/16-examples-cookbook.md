@@ -265,8 +265,8 @@ powershell -ExecutionPolicy Bypass -File .\\scripts\test.ps1 -Compiler auto
 
 ```powershell
 .\\build\osfx_cli_cl.exe port-forwarder add-rule r2 udp * tcp 9100
-.\\build\osfx_cli_cl.exe port-forwarder save E:\\OSynapptic-FX\\build\\pf_rules.txt
-.\\build\osfx_cli_cl.exe port-forwarder load E:\\OSynapptic-FX\\build\\pf_rules.txt
+.\\build\osfx_cli_cl.exe port-forwarder save E:\\OSynaptic-FX\\build\\pf_rules.txt
+.\\build\osfx_cli_cl.exe port-forwarder load E:\\OSynaptic-FX\\build\\pf_rules.txt
 .\\build\osfx_cli_cl.exe port-forwarder list
 ```
 

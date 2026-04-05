@@ -1,11 +1,11 @@
-/*
+﻿/*
   EasyQuickStart.ino
 
   Goal:
     Show minimal Arduino-side usage through osfx_easy API.
 
   Suggested audience:
-    First-time Arduino users of OSynapptic-FX.
+    First-time Arduino users of OSynaptic-FX.
     This is the recommended starting sketch before advanced examples.
 
   Steps:
@@ -15,7 +15,7 @@
     4) periodically force FULL resync for late-join receivers
 */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 
 static osfx_easy_context g_easy;
 static uint8_t g_packet[384];
@@ -39,7 +39,7 @@ void setup() {
 
   Serial.println();
   Serial.println("========================================");
-  Serial.println("OSynapptic-FX Easy Quick Start");
+  Serial.println("OSynaptic-FX Easy Quick Start");
   Serial.println("========================================");
 
   osfx_easy_init(&g_easy);

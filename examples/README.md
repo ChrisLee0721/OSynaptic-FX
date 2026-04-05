@@ -1,6 +1,6 @@
-# OSynapptic-FX Arduino Examples
+﻿# OSynaptic-FX Arduino Examples
 
-This folder contains practical Arduino use cases for OSynapptic-FX.
+This folder contains practical Arduino use cases for OSynaptic-FX.
 
 ## Example List
 

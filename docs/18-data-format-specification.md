@@ -1,6 +1,6 @@
 ﻿# 18 OpenSynaptic Standard Data Format Definition (Normative)
 
-This document provides strict definitions for the standard data formats used in the current `OSynapptic-FX` implementation. Unless otherwise stated, all multi-byte integers are in **big-endian** byte order.
+This document provides strict definitions for the standard data formats used in the current `OSynaptic-FX` implementation. Unless otherwise stated, all multi-byte integers are in **big-endian** byte order.
 
 ## A.1 Data Frame (DATA_*) Wire Format
 

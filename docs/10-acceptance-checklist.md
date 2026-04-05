@@ -3,7 +3,7 @@
 ## A. Arduino Package Baseline
 
 - [ ] `library.properties` 字段完整（name/version/includes/architectures）。
-- [ ] `src/OSynappticFX.h` 可被 Arduino Sketch 直接 include。
+- [ ] `src/OSynapticFX.h` 可被 Arduino Sketch 直接 include。
 - [ ] `examples/` 至少包含 5 个可编译实战案例。
 - [ ] 至少在一个 FQBN 上通过示例编译（建议 `arduino:avr:uno`）。
 

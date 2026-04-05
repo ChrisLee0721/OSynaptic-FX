@@ -7,7 +7,7 @@ Produce an Arduino-library-first release package with validated example compile 
 ## Step 0: Arduino Package Integrity
 
 - Verify `library.properties` version and metadata completeness.
-- Verify `src/OSynappticFX.h` remains the public Arduino include entry.
+- Verify `src/OSynapticFX.h` remains the public Arduino include entry.
 - Ensure `examples/` includes at least 5 practical sketches.
 
 ```powershell
@@ -48,7 +48,7 @@ Use checklist in `docs/10-acceptance-checklist.md` and mark all items complete.
 ## Deliverable Set
 
 - Arduino metadata (`library.properties`)
-- Arduino include entry (`src/OSynappticFX.h`)
+- Arduino include entry (`src/OSynapticFX.h`)
 - Practical sketches (`examples/`)
 - Static library output (`libosfx_core.a` / `osfx_core.lib`, maintainer artifact)
 - Quality gate report

@@ -4,8 +4,8 @@
 
 ### Install and Include
 
-- Install from Arduino IDE Libraries Manager: search `OSynapptic-FX`.
-- Arduino include entry: `#include <OSynappticFX.h>`.
+- Install from Arduino IDE Libraries Manager: search `OSynaptic-FX`.
+- Arduino include entry: `#include <OSynapticFX.h>`.
 
 ### Arduino CLI Compile Examples
 
@@ -20,7 +20,7 @@ arduino-cli compile --fqbn arduino:avr:uno .\examples\MultiSensorNodePacket
 ### Precompiled Binary Layout
 
 - `library.properties` uses `precompiled=full`.
-- Arduino-recognized binary path pattern: `src/{build.mcu}/libOSynappticFX.a`.
+- Arduino-recognized binary path pattern: `src/{build.mcu}/libOSynapticFX.a`.
 - Current mapped folders in this repo:
   - `src/atmega328p/`
   - `src/avr/`

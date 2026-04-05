@@ -1,11 +1,11 @@
-﻿# OSynapptic-FX Documentation Library
+﻿# OSynaptic-FX Documentation Library
 
-This directory contains the complete delivery documentation library for `OSynapptic-FX`, with Arduino Libraries Manager delivery as the primary consumer path and native scripts as maintainer QA tooling.
+This directory contains the complete delivery documentation library for `OSynaptic-FX`, with Arduino Libraries Manager delivery as the primary consumer path and native scripts as maintainer QA tooling.
 
 ## Arduino-First Entry
 
 - Library metadata: `library.properties`
-- Arduino public include entry: `src/OSynappticFX.h`
+- Arduino public include entry: `src/OSynapticFX.h`
 - Arduino practical sketches: `examples/`
 - Arduino example playbook: `docs/16-examples-cookbook.md`
 

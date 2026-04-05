@@ -2,7 +2,7 @@
 
 ## Project Positioning
 
-`OSynapptic-FX` is a C99 embedded implementation of the OpenSynaptic protocol core. It is distributed primarily as an Arduino Libraries Manager package while preserving portable C99 internals for maintainers and cross-target verification.
+`OSynaptic-FX` is a C99 embedded implementation of the OpenSynaptic protocol core. It is distributed primarily as an Arduino Libraries Manager package while preserving portable C99 internals for maintainers and cross-target verification.
 
 ## Implemented Scope
 
@@ -12,7 +12,7 @@
 - Security Layer: Session state, key derivation, timestamp monotonicity protection, persistence.
 - Runtime: Transporter runtime, protocol matrix, service runtime.
 - Plugin System (current phase): `transport` lite, `test_plugin` lite, `port_forwarder` full.
-- Arduino Delivery: `library.properties` + `src/OSynappticFX.h` + practical sketches in `examples/`.
+- Arduino Delivery: `library.properties` + `src/OSynapticFX.h` + practical sketches in `examples/`.
 - CLI (maintainer path): Lightweight command routing and standalone entry point `tools/osfx_cli_main.c`.
 
 ## Phase Status

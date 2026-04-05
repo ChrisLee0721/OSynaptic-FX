@@ -1,4 +1,4 @@
-# Syntax highlighting keywords for OSynapptic-FX Arduino library
+﻿# Syntax highlighting keywords for OSynaptic-FX Arduino library
 # Format: KEYWORD\tTOKENTYPE\tRSS_URL
 # TOKENTYPE: KEYWORD1 = datatype, KEYWORD2 = function, LITERAL1 = constant
 

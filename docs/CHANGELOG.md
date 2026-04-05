@@ -1,6 +1,6 @@
 ﻿# Changelog
 
-All notable changes to `OSynapptic-FX` are documented in this file.
+All notable changes to `OSynaptic-FX` are documented in this file.
 
 ## [v1.0.0-p5] - 2026-04-04
 

@@ -70,10 +70,10 @@
 
 ```powershell
 # Save rules
-.\\build\osfx_cli_cl.exe port-forwarder save E:\\OSynapptic-FX\\build\\pf_rules.txt
+.\\build\osfx_cli_cl.exe port-forwarder save E:\\OSynaptic-FX\\build\\pf_rules.txt
 
 # Reload rules
-.\\build\osfx_cli_cl.exe port-forwarder load E:\\OSynapptic-FX\\build\\pf_rules.txt
+.\\build\osfx_cli_cl.exe port-forwarder load E:\\OSynaptic-FX\\build\\pf_rules.txt
 ```
 
 ## Common Failures and Remedies

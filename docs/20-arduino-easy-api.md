@@ -1,4 +1,4 @@
-# 20 Arduino Easy API
+﻿# 20 Arduino Easy API
 
 This document introduces a simplified Arduino-facing API layer built on top of the existing C99 core APIs.
 
@@ -10,7 +10,7 @@ This document introduces a simplified Arduino-facing API layer built on top of t
 
 ## Header and Entry
 
-- Arduino include entry: `src/OSynappticFX.h`
+- Arduino include entry: `src/OSynapticFX.h`
 - Easy API header: `include/osfx_easy.h`
 - Easy API implementation: `src/osfx_easy.c`
 - Reference sketch: `examples/EasyQuickStart/EasyQuickStart.ino`

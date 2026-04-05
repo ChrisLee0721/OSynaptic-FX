@@ -21,7 +21,7 @@
 ### Notes
 
 - Quality gate report: `build/quality_gate_report.md`
-- Release notes: `OSynapptic-FX/docs/08-release-notes.md`
-- Mirror coverage: `OSynapptic-FX/docs/09-mirror-coverage-report.md`
+- Release notes: `OSynaptic-FX/docs/08-release-notes.md`
+- Mirror coverage: `OSynaptic-FX/docs/09-mirror-coverage-report.md`
 
 

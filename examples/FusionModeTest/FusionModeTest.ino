@@ -1,4 +1,4 @@
-/*
+﻿/*
   FusionModeTest.ino
 
   Purpose:
@@ -15,7 +15,7 @@
     on MCU targets.
 */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 #include <string.h>
 #if defined(ESP32) || defined(ARDUINO_ARCH_ESP32)
 #include <freertos/FreeRTOS.h>
@@ -193,7 +193,7 @@ void setup() {
 
   Serial.println();
   Serial.println("========================================");
-  Serial.println("OSynapptic-FX Fusion Mode Test");
+  Serial.println("OSynaptic-FX Fusion Mode Test");
   Serial.println("Expect: FULL -> DIFF -> HEART");
   Serial.println("Low-stack mode: verify via packet meta only");
   Serial.println("========================================");

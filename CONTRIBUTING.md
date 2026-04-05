@@ -1,6 +1,6 @@
-# Contributing to OSynapptic-FX
+﻿# Contributing to OSynaptic-FX
 
-Thank you for your interest in contributing to OSynapptic-FX! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to OSynaptic-FX! This document provides guidelines and instructions for contributing to the project.
 
 ## Getting Started
 
@@ -15,8 +15,8 @@ Thank you for your interest in contributing to OSynapptic-FX! This document prov
 
 1. **Clone the repository:**
    ```powershell
-   git clone https://github.com/REPLACE_WITH_REAL_ORG/OSynapptic-FX.git
-   cd OSynapptic-FX
+   git clone https://github.com/REPLACE_WITH_REAL_ORG/OSynaptic-FX.git
+   cd OSynaptic-FX
    ```
 
 2. **Review project documentation:**
@@ -234,5 +234,5 @@ When proposing new features:
 
 This project adheres to the Code of Conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
 
-Thank you for contributing to OSynapptic-FX!
+Thank you for contributing to OSynaptic-FX!
 

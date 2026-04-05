@@ -1,4 +1,4 @@
-/*
+﻿/*
   PacketMetaDecode.ino
 
   Purpose:
@@ -9,7 +9,7 @@
     Gateway-side auditing and decoding workflows.
 */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 
 static uint8_t packet_buf[256];
 static uint8_t body_buf[192];
@@ -38,7 +38,7 @@ void setup() {
   }
 
   Serial.println();
-  Serial.println("OSynapptic-FX Example: PacketMetaDecode (core API)");
+  Serial.println("OSynaptic-FX Example: PacketMetaDecode (core API)");
 
   if (!osfx_core_encode_sensor_packet(
           0x0A0B0C0DU,

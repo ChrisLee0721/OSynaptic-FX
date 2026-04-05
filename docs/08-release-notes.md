@@ -4,12 +4,12 @@
 
 - Version: `v1.0.0-p5` (建议标签)
 - Date: `2026-04-04`
-- Package: `OSynapptic-FX` Arduino library package (`library.properties`) + scoped runtime plugins + maintainer CLI lite
+- Package: `OSynaptic-FX` Arduino library package (`library.properties`) + scoped runtime plugins + maintainer CLI lite
 
 ## Highlights
 
 - 完成 `P0~P4` 核心里程碑。
-- Arduino Libraries Manager 交付基线已对齐：`library.properties`、`src/OSynappticFX.h`、`examples/`。
+- Arduino Libraries Manager 交付基线已对齐：`library.properties`、`src/OSynapticFX.h`、`examples/`。
 - 示例覆盖扩展至 5 个实战场景：单包编码、元数据解包、融合自动模式、安全会话回环、多传感器节点包。
 - 插件策略收敛为：`transport` lite、`test_plugin` lite、`port_forwarder` full。
 - 新增独立 CLI 入口（`tools/osfx_cli_main.c`）与轻量命令路由。

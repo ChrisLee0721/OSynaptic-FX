@@ -1,5 +1,5 @@
-#ifndef OSYNAPPTIC_FX_ARDUINO_H
-#define OSYNAPPTIC_FX_ARDUINO_H
+﻿#ifndef OSYNAPTIC_FX_ARDUINO_H
+#define OSYNAPTIC_FX_ARDUINO_H
 
 #ifdef __cplusplus
 extern "C" {

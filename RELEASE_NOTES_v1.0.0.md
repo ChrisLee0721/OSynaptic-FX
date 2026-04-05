@@ -1,4 +1,4 @@
-# OSynapptic-FX v1.0.0
+﻿# OSynaptic-FX v1.0.0
 
 First stable release. Focuses on protocol correctness, ESP32 DRAM safety, and struct-level memory optimisation, making the library production-deployable on constrained MCU targets.
 

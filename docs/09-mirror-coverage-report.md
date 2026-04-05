@@ -3,7 +3,7 @@
 ## 对比基准
 
 - Source platform: `OpenSynaptic`
-- Target runtime: `OSynapptic-FX`
+- Target runtime: `OSynaptic-FX`
 
 ## 镜像覆盖结论
 

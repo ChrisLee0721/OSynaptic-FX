@@ -1,9 +1,9 @@
-/*
+﻿/*
   BootCliOrRun.ino
 
   Goal:
     - Boot window: 10 seconds for serial input "cli"
-    - If entered, run lightweight OSynapptic CLI loop
+    - If entered, run lightweight OSynaptic CLI loop
     - Otherwise enter persistent sensor run mode
 
   Suggested audience:
@@ -15,7 +15,7 @@
     - Default package config enables OSFX_ENABLE_CLI and OSFX_ENABLE_FILE_IO.
 */
 
-#include <OSynappticFX.h>
+#include <OSynapticFX.h>
 #include <osfx_storage_littlefs.h>
 #include <string.h>
 #include <stdlib.h>
@@ -802,7 +802,7 @@ void setup() {
 
   Serial.println();
   Serial.println("========================================");
-  Serial.println("OSynapptic-FX Boot CLI / Run Demo");
+  Serial.println("OSynaptic-FX Boot CLI / Run Demo");
   Serial.println("type 'cli' within 10s to enter CLI mode");
   Serial.println("========================================");
 

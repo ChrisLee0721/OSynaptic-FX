@@ -1,11 +1,11 @@
-# Build output
+﻿# Build output
 build/
 
 # Native artifacts
 *.o
 *.obj
 *.a
-!src/**/libOSynappticFX.a
+!src/**/libOSynapticFX.a
 !extras/precompiled-non-arduino/*.a
 *.lib
 *.exe
