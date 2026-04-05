@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "dev", "release/**"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Quality gate: native build + three-compiler test matrix
+  # ---------------------------------------------------------------------------
+  quality-gate:
+    name: Quality Gate (Windows / ${{ matrix.compiler }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang, cl]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM (clang)
+        if: matrix.compiler == 'clang'
+        run: choco install llvm --yes --no-progress
+
+      - name: Verify compiler
+        shell: pwsh
+        run: |
+          $c = "${{ matrix.compiler }}"
+          if ($c -eq 'cl') {
+            & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 2>$null || true
+          }
+          Get-Command $c -ErrorAction Stop | Select-Object Name, Source
+
+      - name: Build & Test
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\test.ps1 -Compiler ${{ matrix.compiler }}
+
+      - name: Upload quality gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-report-${{ matrix.compiler }}
+          path: build/quality_gate_report.md
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Benchmark gate (gcc, host only)
+  # ---------------------------------------------------------------------------
+  bench:
+    name: Benchmark Gate
+    runs-on: windows-latest
+    needs: quality-gate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run benchmark
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\bench.ps1 -Compiler gcc -MemoryLimitKB 16
+
+      - name: Upload bench reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-reports
+          path: |
+            build/bench/bench_report.md
+            build/bench/bench_report.csv
+          if-no-files-found: ignore

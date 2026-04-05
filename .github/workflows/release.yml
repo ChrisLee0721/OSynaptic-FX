@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]*"
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Full quality gate (all three compilers)
+  # ---------------------------------------------------------------------------
+  quality-gate:
+    name: Quality Gate (${{ matrix.compiler }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        compiler: [gcc, clang, cl]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM (clang)
+        if: matrix.compiler == 'clang'
+        run: choco install llvm --yes --no-progress
+
+      - name: Build & Test
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\test.ps1 -Compiler ${{ matrix.compiler }}
+
+      - name: Upload quality gate report
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-${{ matrix.compiler }}
+          path: build/quality_gate_report.md
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # 2. Benchmark gate
+  # ---------------------------------------------------------------------------
+  bench:
+    name: Benchmark Gate
+    runs-on: windows-latest
+    needs: quality-gate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run benchmark
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\bench.ps1 -Compiler gcc -MemoryLimitKB 16
+
+      - name: Upload bench reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-reports
+          path: |
+            build/bench/bench_report.md
+            build/bench/bench_report.csv
+
+  # ---------------------------------------------------------------------------
+  # 3. Matrix build — precompiled .a for all toolchains present
+  # ---------------------------------------------------------------------------
+  matrix-build:
+    name: Matrix Build (precompiled .a)
+    runs-on: windows-latest
+    needs: quality-gate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build matrix (host x86_64 only; cross-toolchains absent)
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\build.ps1 -Matrix
+
+      - name: Upload precompiled libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: precompiled-libs
+          path: src/**/libOSynapticFX.a
+
+  # ---------------------------------------------------------------------------
+  # 4. Package + publish GitHub Release
+  # ---------------------------------------------------------------------------
+  publish:
+    name: Publish GitHub Release
+    runs-on: windows-latest
+    needs: [bench, matrix-build]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download precompiled libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: precompiled-libs
+          path: src
+
+      - name: Download bench reports
+        uses: actions/download-artifact@v4
+        with:
+          name: bench-reports
+          path: build/bench
+
+      - name: Create Arduino library ZIP
+        shell: pwsh
+        run: |
+          $tag    = "${{ github.ref_name }}"
+          $ver    = $tag -replace '^v', ''
+          $pkgDir = "OSynaptic-FX"
+          $zip    = "OSynaptic-FX-${ver}.zip"
+
+          # Assemble package tree
+          New-Item -ItemType Directory -Path $pkgDir -Force | Out-Null
+          Copy-Item library.properties  $pkgDir
+          Copy-Item README.md           $pkgDir
+          Copy-Item LICENSE             $pkgDir
+          Copy-Item keywords.txt        $pkgDir
+          Copy-Item -Recurse src        $pkgDir
+          Copy-Item -Recurse include    $pkgDir
+          Copy-Item -Recurse examples   $pkgDir
+
+          Compress-Archive -Path $pkgDir -DestinationPath $zip -Force
+          Write-Host "Packaged: $zip ($([math]::Round((Get-Item $zip).Length/1024,1)) KB)"
+          echo "ZIP_NAME=$zip" >> $env:GITHUB_ENV
+          echo "PKG_VER=$ver"  >> $env:GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "OSynaptic-FX ${{ github.ref_name }}"
+          body_path: RELEASE_NOTES_v1.0.0.md
+          files: |
+            ${{ env.ZIP_NAME }}
+            build/bench/bench_report.md
+            build/bench/bench_report.csv
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
