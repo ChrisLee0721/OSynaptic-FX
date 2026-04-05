@@ -338,6 +338,59 @@ jobs:
           name: pkg-macos-arm64
           path: libosfx_macos_arm64.a
 
+  # ─── Platform: iOS arm64 (Xcode / xcrun) ────────────────────────────────
+  ios-arm64-package:
+    name: Build (ios-arm64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build iOS arm64 library
+        run: |
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          mkdir -p build-ios-arm64/obj
+          for c in src/*.c; do
+            xcrun --sdk iphoneos clang \
+              -target arm64-apple-ios14.0 \
+              -isysroot "$SDK" \
+              -std=c99 -O2 -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-ios-arm64/obj/$(basename "${c%.c}").o"
+          done
+          libtool -static -o libosfx_ios_arm64.a build-ios-arm64/obj/*.o
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-ios-arm64
+          path: libosfx_ios_arm64.a
+
+  # ─── Platform: Android arm64-v8a (NDK) ──────────────────────────────────
+  android-arm64-package:
+    name: Build (android-arm64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Android NDK
+        uses: android-actions/setup-android@v3
+      - name: Build Android arm64-v8a library
+        run: |
+          # Locate the NDK clang for arm64-v8a (API 21 = minimum for 64-bit Android)
+          NDK_ROOT="${ANDROID_NDK_HOME:-${ANDROID_NDK:-${ANDROID_SDK_ROOT}/ndk-bundle}}"
+          TOOLCHAIN="${NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64"
+          CC="${TOOLCHAIN}/bin/aarch64-linux-android21-clang"
+          AR="${TOOLCHAIN}/bin/llvm-ar"
+          mkdir -p build-android-arm64/obj
+          for c in src/*.c; do
+            "$CC" -std=c99 -O2 -Iinclude \
+              -DOSFX_ENABLE_FILE_IO=0 -DOSFX_ENABLE_CLI=0 \
+              -c "$c" -o "build-android-arm64/obj/$(basename "${c%.c}").o"
+          done
+          "$AR" rcs libosfx_android_arm64.a build-android-arm64/obj/*.o
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-android-arm64
+          path: libosfx_android_arm64.a
+
   # ─── Publish GitHub Release ───────────────────────────────────────────────
   publish:
     name: Publish GitHub Release
@@ -355,6 +408,8 @@ jobs:
       - windows-x86_64-package
       - macos-x86_64-package
       - macos-arm64-package
+      - android-arm64-package
+      - ios-arm64-package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -457,6 +512,8 @@ jobs:
           rename_lib pkg-windows-x86_64 "osfx-${VER}-windows-x86_64.lib"
           rename_lib pkg-macos-x86_64   "osfx-${VER}-macos-x86_64.a"
           rename_lib pkg-macos-arm64    "osfx-${VER}-macos-arm64.a"
+          rename_lib pkg-android-arm64  "osfx-${VER}-android-arm64.a"
+          rename_lib pkg-ios-arm64      "osfx-${VER}-ios-arm64.a"
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
