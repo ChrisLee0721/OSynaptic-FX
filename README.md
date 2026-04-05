@@ -1,4 +1,4 @@
-﻿# OSynaptic-FX
+# OSynaptic-FX
 
 **Embedded-first OpenSynaptic C99 runtime for Arduino** — encodes multi-sensor readings into a compact binary packet, sends FULL or delta-DIFF frames, and integrates directly with the [OpenSynaptic](../OpenSynaptic/README.md) server over any transport (UDP / TCP / UART / LoRa / MQTT / CAN).
 
@@ -153,6 +153,7 @@ See [examples/ESP32WiFiMultiSensorAuto](examples/ESP32WiFiMultiSensorAuto/ESP32W
 ## Tuning for Your Target
 
 All limits are overridable before including any OSynaptic-FX header. Edit **`include/osfx_user_config.h`** (or pass `-D` flags to your build system):
+All limits are overridable before including any OSynaptic-FX header. Edit **`include/osfx_user_config.h`** (or pass `-D` flags to your build system):
 
 ```c
 /* include/osfx_user_config.h  — uncomment to override defaults */
@@ -245,6 +246,7 @@ OSynaptic-FX-Arduino/           ← single source of truth
 ├── library.properties      # Arduino Library Manager metadata
 ├── keywords.txt            # IDE syntax highlighting
 ├── src/
+│   ├── OSynapticFX.h      # Umbrella include (use this in sketches)
 │   ├── OSynapticFX.h      # Umbrella include (use this in sketches)
 │   ├── *.c                 # C99 implementation (21 files shared with CMake)
 │   ├── osfx_easy.c         # High-level easy API (Arduino + CMake)
@@ -340,6 +342,16 @@ Run `scripts/build.ps1 -Matrix` to (re-)generate all archives; toolchains not on
 | Xtensa (ESP32) | `esp32` | `src/esp32/libOSynapticFX.a` |
 | AVR ATmega328P | `avr328p` | `src/avr/atmega328p/libOSynapticFX.a` |
 | AVR ATmega2560 | `avr2560` | `src/avr/atmega2560/libOSynapticFX.a` |
+| x86_64 (host) | `x86_64` | `src/host/libOSynapticFX.a` |
+| ARM Cortex-M0+ | `cortexm0plus` | `src/cortex-m0plus/libOSynapticFX.a` |
+| ARM Cortex-M3 | `cortexm3` | `src/cortex-m3/libOSynapticFX.a` |
+| ARM Cortex-M4 | `cortexm4` | `src/cortex-m4/libOSynapticFX.a` |
+| ARM Cortex-M7 | `cortexm7` | `src/cortex-m7/libOSynapticFX.a` |
+| ARM Cortex-M33 | `cortexm33` | `src/cortex-m33/libOSynapticFX.a` |
+| RISC-V 32 | `riscv32` | `src/riscv32/libOSynapticFX.a` |
+| Xtensa (ESP32) | `esp32` | `src/esp32/libOSynapticFX.a` |
+| AVR ATmega328P | `avr328p` | `src/avr/atmega328p/libOSynapticFX.a` |
+| AVR ATmega2560 | `avr2560` | `src/avr/atmega2560/libOSynapticFX.a` |
 
 Each archive is compiled with the matching `cmake/arch_presets/<preset>.cmake` memory limits so static DRAM usage is deterministic.
 
@@ -383,6 +395,7 @@ Each archive is compiled with the matching `cmake/arch_presets/<preset>.cmake` m
 ### Server side (OpenSynaptic)
 
 - [../OpenSynaptic/README.md](../OpenSynaptic/README.md) — Python / Rust server that receives OSynaptic-FX packets
+- [../OpenSynaptic/README.md](../OpenSynaptic/README.md) — Python / Rust server that receives OSynaptic-FX packets
 
 ---
 
@@ -391,6 +404,7 @@ Each archive is compiled with the matching `cmake/arch_presets/<preset>.cmake` m
 1. Read `DATA_FORMATS_SPEC.md` before touching any encode/decode path.
 2. All changes to `src/` must keep both `scripts/build.ps1 -Compiler auto` (PowerShell) and `cmake -B build && cmake --build build` (CMake) green.
 3. Run native tests: `powershell -ExecutionPolicy Bypass -File scripts/test.ps1 -Compiler auto`
+4. This is the **single source of truth** — do not sync changes to `OSynaptic-FX/` (that repository is deprecated).
 4. This is the **single source of truth** — do not sync changes to `OSynaptic-FX/` (that repository is deprecated).
 5. Update docs at the closest ownership level — do not duplicate content between README and `docs/`.
 
