@@ -1,0 +1,43 @@
+name: CI / Clang
+
+on:
+  push:
+    branches: ["main", "dev", "release/**"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ci-clang-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Quality gate — Clang
+  # ---------------------------------------------------------------------------
+  quality-gate-clang:
+    name: Quality Gate (Clang)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM (clang)
+        run: choco install llvm --yes --no-progress
+
+      - name: Verify clang
+        shell: pwsh
+        run: clang --version
+
+      - name: Build & Test
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\test.ps1 -Compiler clang
+
+      - name: Upload quality gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-clang
+          path: build/quality_gate_report.md
+          if-no-files-found: ignore

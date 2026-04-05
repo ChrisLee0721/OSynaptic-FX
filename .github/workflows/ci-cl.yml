@@ -1,0 +1,47 @@
+name: CI / MSVC (cl)
+
+on:
+  push:
+    branches: ["main", "dev", "release/**"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ci-cl-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Quality gate — MSVC (cl)
+  # ilammy/msvc-dev-cmd injects cl.exe / link.exe into PATH for all
+  # subsequent steps — no need to call vcvarsall.bat manually.
+  # ---------------------------------------------------------------------------
+  quality-gate-cl:
+    name: Quality Gate (MSVC)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC x64 environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Verify cl on PATH
+        shell: pwsh
+        run: Get-Command cl | Select-Object -ExpandProperty Source
+
+      - name: Build & Test
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+          & powershell -ExecutionPolicy Bypass -File scripts\test.ps1 -Compiler cl
+
+      - name: Upload quality gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-cl
+          path: build/quality_gate_report.md
+          if-no-files-found: ignore
