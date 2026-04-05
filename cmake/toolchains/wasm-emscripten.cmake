@@ -1,0 +1,7 @@
+set(CMAKE_SYSTEM_NAME Emscripten)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
+set(CMAKE_C_COMPILER emcc)
+set(CMAKE_AR emar)
+set(CMAKE_RANLIB emranlib)
+

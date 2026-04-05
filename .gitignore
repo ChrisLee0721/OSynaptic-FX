@@ -1,0 +1,24 @@
+# Build output
+build/
+
+# Native artifacts
+*.o
+*.obj
+*.a
+!src/**/libOSynappticFX.a
+!extras/precompiled-non-arduino/*.a
+*.lib
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+
+# Reports
+build/**/bench_report.csv
+build/**/bench_report.md
+build/quality_gate_report.md
+
