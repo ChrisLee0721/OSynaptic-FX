@@ -130,3 +130,116 @@ int osfx_build_secure_channel_ack(uint32_t assigned_id, uint8_t* out, size_t out
     return 5;
 }
 
+int osfx_parse_id_assign(
+    const uint8_t* packet,
+    size_t packet_len,
+    uint16_t* out_seq,
+    uint32_t* out_assigned_id,
+    uint64_t* out_server_time
+) {
+    if (!packet || packet_len < 7U || packet[0] != OSFX_CMD_ID_ASSIGN) {
+        return 0;
+    }
+    if (out_seq) {
+        *out_seq = (uint16_t)(((uint16_t)packet[1] << 8) | packet[2]);
+    }
+    if (out_assigned_id) {
+        *out_assigned_id = ((uint32_t)packet[3] << 24) |
+                           ((uint32_t)packet[4] << 16) |
+                           ((uint32_t)packet[5] << 8)  |
+                            (uint32_t)packet[6];
+    }
+    if (out_server_time) {
+        if (packet_len >= 15U) {
+            *out_server_time = ((uint64_t)packet[7]  << 56) |
+                               ((uint64_t)packet[8]  << 48) |
+                               ((uint64_t)packet[9]  << 40) |
+                               ((uint64_t)packet[10] << 32) |
+                               ((uint64_t)packet[11] << 24) |
+                               ((uint64_t)packet[12] << 16) |
+                               ((uint64_t)packet[13] << 8)  |
+                                (uint64_t)packet[14];
+        } else {
+            *out_server_time = 0U;
+        }
+    }
+    return 1;
+}
+
+int osfx_parse_time_response(
+    const uint8_t* packet,
+    size_t packet_len,
+    uint16_t* out_seq,
+    uint64_t* out_unix_ts
+) {
+    if (!packet || packet_len < 11U || packet[0] != OSFX_CMD_TIME_RESPONSE) {
+        return 0;
+    }
+    if (out_seq) {
+        *out_seq = (uint16_t)(((uint16_t)packet[1] << 8) | packet[2]);
+    }
+    if (out_unix_ts) {
+        *out_unix_ts = ((uint64_t)packet[3]  << 56) |
+                       ((uint64_t)packet[4]  << 48) |
+                       ((uint64_t)packet[5]  << 40) |
+                       ((uint64_t)packet[6]  << 32) |
+                       ((uint64_t)packet[7]  << 24) |
+                       ((uint64_t)packet[8]  << 16) |
+                       ((uint64_t)packet[9]  << 8)  |
+                        (uint64_t)packet[10];
+    }
+    return 1;
+}
+
+int osfx_build_id_pool_request(
+    uint16_t seq,
+    uint16_t count,
+    uint8_t* out,
+    size_t out_cap
+) {
+    if (!out || out_cap < 5U) {
+        return 0;
+    }
+    out[0] = OSFX_CMD_ID_POOL_REQ;
+    write_u16_be(out + 1, seq);
+    write_u16_be(out + 3, count);
+    return 5;
+}
+
+int osfx_parse_id_pool_response(
+    const uint8_t* packet,
+    size_t packet_len,
+    uint16_t* out_seq,
+    uint32_t* out_pool,
+    size_t out_pool_cap,
+    size_t* out_count
+) {
+    uint16_t declared_count;
+    size_t i;
+    size_t actual;
+
+    if (!packet || packet_len < 5U || packet[0] != OSFX_CMD_ID_POOL_RES) {
+        return 0;
+    }
+    if (out_seq) {
+        *out_seq = (uint16_t)(((uint16_t)packet[1] << 8) | packet[2]);
+    }
+    declared_count = (uint16_t)(((uint16_t)packet[3] << 8) | packet[4]);
+    /* Verify packet is long enough to hold all declared AIDs */
+    if (packet_len < 5U + (size_t)declared_count * 4U) {
+        return 0;
+    }
+    actual = (declared_count < (uint16_t)out_pool_cap) ? declared_count : (uint16_t)out_pool_cap;
+    for (i = 0; i < actual; ++i) {
+        size_t off = 5U + i * 4U;
+        out_pool[i] = ((uint32_t)packet[off]     << 24) |
+                      ((uint32_t)packet[off + 1] << 16) |
+                      ((uint32_t)packet[off + 2] << 8)  |
+                       (uint32_t)packet[off + 3];
+    }
+    if (out_count) {
+        *out_count = actual;
+    }
+    return 1;
+}
+
