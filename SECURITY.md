@@ -6,9 +6,8 @@ We provide security updates for the following versions:
 
 | Version | Supported          | End of Support |
 | ------- | ------------------ | -------------- |
-| 0.2.x   | :white_check_mark: | Current        |
-| 0.1.x   | :warning: Limited  | 2024-12-31     |
-| < 0.1   | :x:                | Not supported  |
+| 1.0.x   | :white_check_mark: | Current        |
+| < 1.0.0 | :x:                | Not supported  |
 
 ## Security Considerations
 

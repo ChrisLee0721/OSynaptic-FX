@@ -56,11 +56,14 @@ Constraints:
 
 ## A.4 Control Frame Minimal Structure (Common)
 
-- `ID_REQUEST`: `[cmd:1][seq:2]` (minimum 3 bytes)
-- `ID_ASSIGN`: `[cmd:1][seq:2][assigned_id:4]`
+- `ID_REQUEST`: `[cmd:1][seq:2]` (minimum 3 bytes, optional JSON device-meta appended)
+- `ID_ASSIGN`: `[cmd:1][seq:2][assigned_id:4]` (base 7 bytes)
+  - **Optional extension (backward-compatible)**: server MAY append `[server_time:8]` (u64 BE unix timestamp) making total 15 bytes.
+    Old/simple clients read only the first 7 bytes and ignore the extension.
+    Use `osfx_parse_id_assign()` to safely parse both variants.
 - `HANDSHAKE_NACK`: `[cmd:1][seq:2][reason:utf8-bytes]`
 - `TIME_REQUEST`: `[cmd:1][seq:2]`
-- `TIME_RESPONSE`: `[cmd:1][seq:2][unix_ts:8]`
+- `TIME_RESPONSE`: `[cmd:1][seq:2][unix_ts:8]` (u64 BE)
 
 ## A.5 Secure Semantics
 

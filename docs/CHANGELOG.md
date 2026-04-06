@@ -2,6 +2,23 @@
 
 All notable changes to `OSynaptic-FX` are documented in this file.
 
+## [v1.0.1] - 2026-04-06
+
+### Compatibility
+
+- Verified compatible with **OpenSynaptic v1.2.0** RSCore performance baseline.
+  - OpenSynaptic v1.2.0 ships with an optimised Rust compute engine (RSCore)
+    achieving ~1.32M pps on AMD Ryzen 5 9600X; the MCU-side wire format is
+    unchanged — no OSynaptic-FX changes are required.
+- Added `20-arduino-easy-api.md` to documentation and mirrored to the
+  `opensynaptic.github.io` documentation site.
+
+### Documentation
+
+- New guide: `docs/20-arduino-easy-api.md` — Quick-start Arduino Easy API reference.
+
+---
+
 ## [v1.0.0-p5] - 2026-04-04
 
 ### Added
